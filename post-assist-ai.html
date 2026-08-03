@@ -112,6 +112,8 @@
   </div>
 </div>
 
+<script src="shared/nav.js"></script>
+<script src="shared/api-client.js"></script>
 <script>
 const genBtn = document.getElementById('genBtn');
 const resultArea = document.getElementById('resultArea');
@@ -219,22 +221,16 @@ styleは "emphasis"(強調・大きめ), "normal"(通常テロップ), "tsukkomi
 telopsは文字起こしの主要な箇所ごとに、sfxは驚き・オチ・間合いなど効果音が映える箇所に絞って提案してください。`;
 
   try{
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 2000,
-        messages: [{ role: "user", content: prompt }]
-      })
+    let text = await AnthropicAPI.createMessage({
+      model: "claude-sonnet-5",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: prompt }]
     });
-    const data = await response.json();
-    let text = data.content.map(b => b.text || "").join("\n");
     text = text.replace(/```json|```/g, "").trim();
     const result = JSON.parse(text);
     renderResult(result, totalDuration);
   }catch(err){
-    resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${err.message}</div>`;
+    resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
   }finally{
     genBtn.disabled = false;
   }
