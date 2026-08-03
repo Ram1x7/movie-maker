@@ -1,0 +1,113 @@
+/**
+ * Shared design tokens and base styles for the Heartopia tool suite
+ * (buzz-structure-ai.html, clip-finder-ai.html, post-assist-ai.html).
+ *
+ * Load this before each page's own <style> block so page-specific rules
+ * (grid widths, textarea heights, etc.) can still override where needed.
+ */
+:root{
+  --bg: #14161a;
+  --panel: #1c1f26;
+  --panel2: #22262f;
+  --line: #2c313b;
+  --text: #e9e7e2;
+  --sub: #8b8d97;
+  --accent: #ff6b35;
+  --accent-dim: #ff6b3522;
+  --cyan: #4ecdc4;
+  --cyan-dim: #4ecdc422;
+  --gold: #f4c95d;
+  --gold-dim: #f4c95d22;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Noto Sans JP', sans-serif;
+  min-height:100vh;
+}
+.topbar{
+  display:flex; align-items:center; gap:12px;
+  padding:18px 28px; border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, #17191f 0%, #14161a 100%);
+}
+.topbar .rec{
+  width:9px;height:9px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 10px var(--accent);
+  animation:pulse 1.6s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.topbar h1{
+  font-family:'Space Grotesk', sans-serif;
+  font-size:16px; font-weight:700; letter-spacing:.04em; margin:0;
+  text-transform:uppercase;
+}
+.topbar .tag{
+  font-family:'JetBrains Mono', monospace;
+  font-size:11px; color:var(--sub); margin-left:auto;
+}
+.wrap{
+  display:grid;
+  gap:1px;
+  background:var(--line);
+  min-height:calc(100vh - 60px);
+}
+.panel{ background:var(--bg); padding:24px; }
+.field{ margin-bottom:18px; }
+label{
+  display:block; font-size:11px; color:var(--sub);
+  font-family:'JetBrains Mono', monospace; text-transform:uppercase;
+  letter-spacing:.06em; margin-bottom:6px;
+}
+input:focus, textarea:focus, select:focus{
+  outline:none; border-color:var(--accent);
+}
+.gen-btn{
+  width:100%; padding:13px; border-radius:6px; border:none;
+  background:var(--accent); color:#14161a; font-weight:700;
+  font-size:14px; cursor:pointer; letter-spacing:.02em;
+  font-family:'Space Grotesk', sans-serif;
+}
+.gen-btn:disabled{ opacity:.5; cursor:not-allowed; }
+.hint{ font-size:11px; color:var(--sub); margin-top:6px; line-height:1.5; }
+.result-area{ padding:28px 32px; overflow-x:auto; }
+.empty{
+  color:var(--sub); font-size:13px; height:100%;
+  display:flex; align-items:center; justify-content:center;
+  min-height:300px; text-align:center; line-height:1.8;
+  font-family:'JetBrains Mono', monospace;
+}
+.loading{
+  display:flex; gap:6px; align-items:center; color:var(--sub);
+  font-family:'JetBrains Mono', monospace; font-size:12px;
+  min-height:300px; justify-content:center;
+}
+.dot{ width:6px; height:6px; border-radius:50%; background:var(--accent); animation:blink 1s infinite; }
+.dot:nth-child(2){ animation-delay:.2s; }
+.dot:nth-child(3){ animation-delay:.4s; }
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+.err{ color:#ff6b6b; font-size:12.5px; font-family:'JetBrains Mono', monospace; }
+.section-label{
+  font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--cyan);
+  text-transform:uppercase; letter-spacing:.08em;
+}
+
+/* Video/Whisper upload UI, shared by buzz-structure-ai.html and clip-finder-ai.html */
+.file-drop{
+  border:1px dashed var(--line); border-radius:8px; padding:14px; text-align:center;
+  font-size:12px; color:var(--sub); cursor:pointer; transition:border-color .15s;
+}
+.file-drop:hover{ border-color:var(--accent); color:var(--text); }
+.file-drop input{ display:none; }
+.file-name{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--cyan); margin-top:6px; word-break:break-all; }
+.size-warn{ color:#ff6b6b; font-size:11px; margin-top:6px; line-height:1.6; font-family:'Noto Sans JP', sans-serif; }
+.sub-btn{
+  width:100%; padding:10px; border-radius:6px; border:1px solid var(--cyan); background:transparent;
+  color:var(--cyan); font-weight:600; font-size:12.5px; cursor:pointer; font-family:'Space Grotesk', sans-serif;
+}
+.sub-btn:disabled{ opacity:.4; cursor:not-allowed; }
+.asr-box{ border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:18px; background:var(--panel); }
+.asr-box label{ margin-top:0; }
+.asr-progress{ font-size:11px; color:var(--gold); font-family:'JetBrains Mono', monospace; margin-top:8px; line-height:1.5; min-height:14px; }
+video, canvas{ display:none; }

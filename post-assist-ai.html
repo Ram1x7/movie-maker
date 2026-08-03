@@ -6,51 +6,16 @@
 <title>テロップ/SE/BGM選定AI - Post Assist</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <style>
-  :root{
-    --bg: #14161a;
-    --panel: #1c1f26;
-    --panel2: #22262f;
-    --line: #2c313b;
-    --text: #e9e7e2;
-    --sub: #8b8d97;
-    --accent: #ff6b35;
-    --accent-dim: #ff6b3522;
-    --cyan: #4ecdc4;
-    --cyan-dim: #4ecdc422;
-    --gold: #f4c95d;
-    --gold-dim: #f4c95d22;
-  }
-  *{box-sizing:border-box;}
-  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Noto Sans JP', sans-serif; min-height:100vh; }
-  .topbar{ display:flex; align-items:center; gap:12px; padding:18px 28px; border-bottom:1px solid var(--line); background:linear-gradient(180deg, #17191f 0%, #14161a 100%); }
-  .topbar .rec{ width:9px;height:9px;border-radius:50%;background:var(--accent); box-shadow:0 0 10px var(--accent); animation:pulse 1.6s infinite; }
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  .topbar h1{ font-family:'Space Grotesk', sans-serif; font-size:16px; font-weight:700; letter-spacing:.04em; margin:0; text-transform:uppercase; }
-  .topbar .tag{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--sub); margin-left:auto; }
-  .wrap{ display:grid; grid-template-columns: 360px 1fr; gap:1px; background:var(--line); min-height:calc(100vh - 60px); }
+  .wrap{ grid-template-columns: 360px 1fr; }
   @media (max-width: 900px){ .wrap{ grid-template-columns: 1fr; } }
-  .panel{ background:var(--bg); padding:24px; }
-  .field{ margin-bottom:18px; }
-  label{ display:block; font-size:11px; color:var(--sub); font-family:'JetBrains Mono', monospace; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
   input[type=text], textarea, select{
     width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--text);
     padding:10px 12px; border-radius:6px; font-family:'Noto Sans JP', sans-serif; font-size:13px; resize:vertical;
   }
   textarea{ min-height:130px; line-height:1.5; font-family:'JetBrains Mono', monospace; font-size:12px; }
-  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--accent); }
-  .gen-btn{ width:100%; padding:13px; border-radius:6px; border:none; background:var(--accent); color:#14161a; font-weight:700; font-size:14px; cursor:pointer; letter-spacing:.02em; font-family:'Space Grotesk', sans-serif; }
-  .gen-btn:disabled{ opacity:.5; cursor:not-allowed; }
-  .hint{ font-size:11px; color:var(--sub); margin-top:6px; line-height:1.5; }
-  .result-area{ padding:28px 32px; overflow-x:auto; }
-  .empty{ color:var(--sub); font-size:13px; height:100%; display:flex; align-items:center; justify-content:center; min-height:300px; text-align:center; line-height:1.8; font-family:'JetBrains Mono', monospace; }
-  .loading{ display:flex; gap:6px; align-items:center; color:var(--sub); font-family:'JetBrains Mono', monospace; font-size:12px; min-height:300px; justify-content:center; }
-  .dot{ width:6px;height:6px;border-radius:50%;background:var(--accent); animation:blink 1s infinite; }
-  .dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
-  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
-  .err{ color:#ff6b6b; font-size:12.5px; font-family:'JetBrains Mono', monospace; }
-
-  .section-label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--cyan); text-transform:uppercase; letter-spacing:.08em; margin:0 0 14px; }
+  .section-label{ margin:0 0 14px; }
 
   .ruler{ position:relative; height:20px; margin-bottom:6px; border-bottom:1px solid var(--line); }
   .ruler span{ position:absolute; top:0; font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--sub); transform:translateX(-50%); }
