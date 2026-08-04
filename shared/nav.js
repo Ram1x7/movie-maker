@@ -7,6 +7,7 @@
     { href: 'buzz-structure-ai.html', label: 'バズる構成AI' },
     { href: 'clip-finder-ai.html', label: '切り抜きファインダーAI' },
     { href: 'post-assist-ai.html', label: 'テロップ/SE/BGM AI' },
+    { href: 'edit-timeline-ai.html', label: '編集タイムライン統合AI' },
   ];
 
   function currentFile() {

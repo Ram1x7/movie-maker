@@ -523,6 +523,7 @@ clipsは想定尺に応じて4〜7個程度、時系列順に。各clipのtags�
       output_config: { format: { type: "json_schema", schema: PLAN_SCHEMA } }
     });
     const result = AnthropicAPI.parseJson(text);
+    lastPlanResult = result;
     renderResult(result);
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
@@ -531,8 +532,23 @@ clipsは想定尺に応じて4〜7個程度、時系列順に。各clipのtags�
   }
 });
 
+let lastPlanResult = null;
+
+resultArea.addEventListener('click', (e) => {
+  if(e.target && e.target.id === 'copyPlanJsonBtn' && lastPlanResult){
+    navigator.clipboard.writeText(JSON.stringify(lastPlanResult)).then(() => {
+      e.target.textContent = 'コピーしました';
+      setTimeout(() => { e.target.textContent = 'この結果をコピー(編集タイムライン統合AI用)'; }, 2000);
+    }).catch(() => {
+      e.target.textContent = 'コピーに失敗しました';
+    });
+  }
+});
+
 function renderResult(result){
   let html = '';
+
+  html += '<button type="button" class="sub-btn" id="copyPlanJsonBtn" style="margin-bottom:20px;">この結果をコピー(編集タイムライン統合AI用)</button>';
 
   html += '<div class="section-label">// Title Ideas</div>';
   html += '<div class="titles">';

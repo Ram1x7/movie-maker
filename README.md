@@ -1,12 +1,13 @@
 # Heartopia 切り抜き・動画編集ツール
 
-Heartopiaの切り抜き/動画編集向けに作った3つの単一HTMLツールです。ビルド不要、サーバー不要。GitHub Pagesなどの静的ホスティングにそのまま置くだけで動きます。
+Heartopiaの切り抜き/動画編集向けに作った4つの単一HTMLツールです。ビルド不要、サーバー不要。GitHub Pagesなどの静的ホスティングにそのまま置くだけで動きます。
 
 - **[buzz-structure-ai.html](./buzz-structure-ai.html)** — バズる構成案の提案(企画モード)+ 既存のYouTube/TikTok動画のリサーチモード(oEmbed取得・Whisper文字起こし・バズ要因分析)
 - **[clip-finder-ai.html](./clip-finder-ai.html)** — 切り抜き箇所の提案(字幕解析・動画フレーム解析・Whisper自動文字起こし)
 - **[post-assist-ai.html](./post-assist-ai.html)** — テロップ/効果音/BGMの選定提案
+- **[edit-timeline-ai.html](./edit-timeline-ai.html)** — 「バズる構成AI」(企画モード)と「切り抜きファインダーAI」の結果を統合し、CapCut等での手作業編集にそのまま使える編集タイムラインを生成
 
-3ツールとも同じデザインで、上部のナビゲーションから相互に移動できます。
+4ツールとも同じデザインで、上部のナビゲーションから相互に移動できます。
 
 ## 使い方
 
@@ -44,16 +45,28 @@ python3 -m http.server 8000
 
 `buzz-structure-ai.html`のリサーチモードでは、TikTok/YouTubeのoEmbedエンドポイントからタイトル・投稿者・サムネイルを自動取得します。TikTok側のCORS制限などで自動取得に失敗した場合は、「手動で入力する」からタイトル・投稿者を直接入力して進められます。
 
+## 編集タイムライン統合(edit-timeline-ai.html)について
+
+「バズる構成AI」の構成案(フック・展開などの役割)と「切り抜きファインダーAI」のスコア付き候補(実際の元動画のタイムコード)を組み合わせて、CapCut Pro等で手作業編集する際にそのまま見ながら作業できるタイムラインを作成します。
+
+使い方:
+1. `buzz-structure-ai.html`の企画モードで構成案を生成し、結果画面の「この結果をコピー」ボタンでJSONをコピー
+2. `clip-finder-ai.html`で切り抜き候補を生成し、同様に「この結果をコピー」でJSONをコピー
+3. `edit-timeline-ai.html`の該当欄にそれぞれ貼り付けて生成
+
+※ CapCutの独自プロジェクトファイル(`.draft_content.json`)を直接生成してインポートする方式は、非公開・未文書化のフォーマットで壊れるリスクが高いため採用していません。あくまで人間が画面を見ながら手作業編集するための一覧表です。
+
 ## リポジトリ構成
 
 ```
 buzz-structure-ai.html   バズる構成AI(企画モード / リサーチモード)
 clip-finder-ai.html      切り抜きファインダーAI
 post-assist-ai.html      テロップ/SE/BGM選定AI
+edit-timeline-ai.html    編集タイムライン統合AI
 shared/
   api-client.js          Anthropic APIキーの管理・設定モーダル・fetchラッパー
   whisper.js             ブラウザ内Whisper文字起こしの共通処理
-  nav.js                 3ツール共通のナビゲーションバー
+  nav.js                 4ツール共通のナビゲーションバー
   theme.css               共通デザイントークン・ベーススタイル
 ```
 
