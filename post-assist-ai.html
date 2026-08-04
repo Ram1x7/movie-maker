@@ -185,14 +185,69 @@ ${transcriptForPrompt}
 styleは "emphasis"(強調・大きめ), "normal"(通常テロップ), "tsukkomi"(ツッコミ/一言コメント風) のいずれか。
 telopsは文字起こしの主要な箇所ごとに、sfxは驚き・オチ・間合いなど効果音が映える箇所に絞って提案してください。`;
 
+  const POST_SCHEMA = {
+    type: "object",
+    properties: {
+      telops: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            time: { type: "string" },
+            text: { type: "string" },
+            style: { type: "string", enum: ["emphasis", "normal", "tsukkomi"] },
+            note: { type: "string" }
+          },
+          required: ["time", "text", "style", "note"],
+          additionalProperties: false
+        }
+      },
+      sfx: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            time: { type: "string" },
+            cue: { type: "string" },
+            note: { type: "string" }
+          },
+          required: ["time", "cue", "note"],
+          additionalProperties: false
+        }
+      },
+      bgm: {
+        type: "object",
+        properties: {
+          genre: { type: "string" },
+          mood: { type: "string" },
+          tempo: { type: "string" },
+          notes: { type: "string" },
+          sections: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: { range: { type: "string" }, description: { type: "string" } },
+              required: ["range", "description"],
+              additionalProperties: false
+            }
+          }
+        },
+        required: ["genre", "mood", "tempo", "notes", "sections"],
+        additionalProperties: false
+      }
+    },
+    required: ["telops", "sfx", "bgm"],
+    additionalProperties: false
+  };
+
   try{
-    let text = await AnthropicAPI.createMessage({
+    const text = await AnthropicAPI.createMessage({
       model: "claude-sonnet-5",
       max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }]
+      messages: [{ role: "user", content: prompt }],
+      output_config: { format: { type: "json_schema", schema: POST_SCHEMA } }
     });
-    text = text.replace(/```json|```/g, "").trim();
-    const result = JSON.parse(text);
+    const result = AnthropicAPI.parseJson(text);
     renderResult(result, totalDuration);
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;

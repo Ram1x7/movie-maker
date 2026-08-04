@@ -324,14 +324,38 @@ scoreは1-10でバズりやすさの目安。文字起こしの内容(驚き・�
 
   progress.textContent = 'AIが解析中...';
 
+  const CLIPS_SCHEMA = {
+    type: "object",
+    properties: {
+      clips: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            start: { type: "string" },
+            end: { type: "string" },
+            score: { type: "integer" },
+            title: { type: "string" },
+            reason: { type: "string" },
+            tags: { type: "array", items: { type: "string" } }
+          },
+          required: ["start", "end", "score", "title", "reason", "tags"],
+          additionalProperties: false
+        }
+      }
+    },
+    required: ["clips"],
+    additionalProperties: false
+  };
+
   try{
-    let text = await AnthropicAPI.createMessage({
+    const text = await AnthropicAPI.createMessage({
       model: "claude-sonnet-5",
       max_tokens: 2000,
-      messages: [{ role: "user", content: contentBlocks }]
+      messages: [{ role: "user", content: contentBlocks }],
+      output_config: { format: { type: "json_schema", schema: CLIPS_SCHEMA } }
     });
-    text = text.replace(/```json|```/g, "").trim();
-    const result = JSON.parse(text);
+    const result = AnthropicAPI.parseJson(text);
     renderResult(result);
     progress.textContent = '';
   }catch(err){
