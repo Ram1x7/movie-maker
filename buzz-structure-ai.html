@@ -327,13 +327,13 @@ transcribeBtn.addEventListener('click', async () => {
   transcribeBtn.disabled = true;
   researchBtn.disabled = true;
   try{
-    const { lines, rawText } = await WhisperUtil.transcribeVideo(videoFile, {
+    const { lines, rawText, decodedSeconds } = await WhisperUtil.transcribeVideo(videoFile, {
       modelName: asrModelSelect.value,
       onStatus: (s) => { asrProgress.textContent = s; },
     });
     const formatted = lines.map(l => `[${WhisperUtil.fmtTime(l.time)}] ${l.text}`);
     researchTranscript.value = formatted.length ? formatted.join('\n') : rawText;
-    asrProgress.textContent = `完了: ${formatted.length || 1}セグメントを生成しました。`;
+    asrProgress.textContent = `完了: ${formatted.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください)`;
   }catch(err){
     asrProgress.textContent = `文字起こしに失敗しました: ${err.message}`;
   }finally{

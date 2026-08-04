@@ -116,6 +116,8 @@ const ASR_DEFAULT_HINT = asrProgress.textContent;
 
 let videoFile = null;
 
+videoDrop.addEventListener('click', () => videoInput.click());
+
 videoInput.addEventListener('change', async () => {
   videoFile = videoInput.files[0];
   videoName.textContent = videoFile ? videoFile.name : '';
@@ -207,7 +209,7 @@ transcribeBtn.addEventListener('click', async () => {
   transcribeBtn.disabled = true;
   genBtn.disabled = true;
   try{
-    const { lines, rawText } = await WhisperUtil.transcribeVideo(videoFile, {
+    const { lines, rawText, decodedSeconds } = await WhisperUtil.transcribeVideo(videoFile, {
       modelName: asrModelSelect.value,
       onStatus: (s) => { asrProgress.textContent = s; },
     });
@@ -217,7 +219,7 @@ transcribeBtn.addEventListener('click', async () => {
     } else {
       transcriptText.value = lines.map(l => `[${fmtTime(l.time)}] ${l.text}`).join('\n');
     }
-    asrProgress.textContent = `完了: ${lines.length || 1}セグメントを生成しました。内容を確認・修正してから切り抜き提案を実行してください。`;
+    asrProgress.textContent = `完了: ${lines.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください) 内容を確認・修正してから切り抜き提案を実行してください。`;
   }catch(err){
     asrProgress.textContent = `文字起こしに失敗しました: ${err.message}`;
   }finally{

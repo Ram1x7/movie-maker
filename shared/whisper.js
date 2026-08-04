@@ -93,6 +93,9 @@
   async function transcribeVideo(file, { modelName, onStatus } = {}) {
     onStatus && onStatus('音声データを準備中...');
     const audioData = await decodeAudioTo16kMono(file);
+    const decodedSeconds = audioData.length / 16000;
+    // eslint-disable-next-line no-console
+    console.log(`[WhisperUtil] decoded audio length: ${decodedSeconds.toFixed(1)}s`);
 
     onStatus && onStatus('モデルを読み込み中... (初回のみ時間がかかります)');
     const transcriber = await getTranscriber(modelName, (p) => {
@@ -102,10 +105,13 @@
     });
 
     onStatus && onStatus('文字起こし中...(動画の長さによって数分かかることがあります)');
+    // chunk_length_s must stay below 30: transformers.js has documented
+    // timestamp-corruption bugs at exactly 30s that truncate/garble output
+    // on longer audio (https://github.com/huggingface/transformers.js/issues/1358).
     const output = await transcriber(audioData, {
       language: 'japanese',
       task: 'transcribe',
-      chunk_length_s: 30,
+      chunk_length_s: 29,
       stride_length_s: 5,
       return_timestamps: true,
     });
@@ -119,7 +125,7 @@
       })
       .filter(Boolean);
 
-    return { lines, rawText: (output.text || '').trim() };
+    return { lines, rawText: (output.text || '').trim(), decodedSeconds };
   }
 
   window.WhisperUtil = {
