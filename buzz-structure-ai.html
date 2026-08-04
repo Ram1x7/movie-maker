@@ -304,6 +304,14 @@ const ASR_DEFAULT_HINT = asrProgress.textContent;
 
 let videoFile = null;
 
+if (WhisperUtil.isIOS()) {
+  const smallOption = asrModelSelect.querySelector('option[value="Xenova/whisper-small"]');
+  if (smallOption) {
+    smallOption.disabled = true;
+    smallOption.textContent = '高精度 (iOSでは利用不可・メモリ不足でクラッシュします)';
+  }
+}
+
 videoDrop.addEventListener('click', () => videoInput.click());
 
 videoInput.addEventListener('change', async () => {
@@ -325,6 +333,9 @@ videoInput.addEventListener('change', async () => {
 transcribeBtn.addEventListener('click', async () => {
   if(!videoFile){ asrProgress.textContent = '先に「動画ファイル」を選択してください。'; return; }
   const modelName = asrModelSelect.value;
+
+  const platformBlock = WhisperUtil.getPlatformModelBlock(modelName);
+  if(platformBlock){ alert(platformBlock); return; }
 
   const switchWarning = WhisperUtil.checkModelSwitchRisk(modelName);
   if(switchWarning && !confirm(switchWarning)) return;

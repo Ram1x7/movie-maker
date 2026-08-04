@@ -110,6 +110,36 @@
     return null;
   }
 
+  /**
+   * All browsers on iOS/iPadOS are required by Apple to use the WebKit
+   * engine under the hood (Chrome/Firefox on iOS are just WebKit with a
+   * different UI shell), and WebKit's WASM linear memory ceiling on iOS is
+   * far lower than desktop browsers. In practice this means whisper-small
+   * ("高精度") can crash the tab right as the model finishes loading —
+   * even on a short video — regardless of the duration-based mitigation
+   * above, since the problem is the model's fixed memory footprint, not
+   * how long transcription runs. iPadOS 13+ reports itself as a Mac
+   * (MacIntel) in the UA string, so touch support is used to tell it apart
+   * from an actual Mac.
+   */
+  function isIOS() {
+    const ua = navigator.userAgent || '';
+    const isAppleMobileUA = /iPad|iPhone|iPod/.test(ua);
+    const isIPadOS13Plus = navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1;
+    return isAppleMobileUA || isIPadOS13Plus;
+  }
+
+  /**
+   * Returns a blocking (non-negotiable) message if the given model is known
+   * to be unusable on this platform, or null otherwise.
+   */
+  function getPlatformModelBlock(modelName) {
+    if (modelName === 'Xenova/whisper-small' && isIOS()) {
+      return 'iOS(iPhone/iPad)のブラウザはWebAssemblyで使えるメモリの上限がPCより低く、動画の長さに関わらず「高精度」モデルの読み込み完了時点でクラッシュ(強制リロード)することが確認されています。iOSでは「標準」または「軽量」モデルをご利用ください。';
+    }
+    return null;
+  }
+
   function fmtTime(s) {
     s = Math.max(0, Math.round(s));
     const h = Math.floor(s / 3600);
@@ -172,6 +202,8 @@
     getTranscriber,
     checkModelSwitchRisk,
     getModelDurationWarning,
+    isIOS,
+    getPlatformModelBlock,
     transcribeVideo,
     fmtTime,
   };
