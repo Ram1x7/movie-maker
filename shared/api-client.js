@@ -130,12 +130,15 @@
     else topbar.appendChild(btn);
   }
 
-  async function createMessage({ model, max_tokens, messages }) {
+  async function createMessage({ model, max_tokens, messages, output_config }) {
     const apiKey = getApiKey();
     if (!apiKey) {
       openKeyModal();
       throw new Error('APIキーが設定されていません。右上の鍵アイコンから設定してください。');
     }
+
+    const body = { model, max_tokens, messages };
+    if (output_config) body.output_config = output_config;
 
     let response;
     try {
@@ -147,7 +150,7 @@
           'anthropic-version': '2023-06-01',
           'anthropic-dangerous-direct-browser-access': 'true',
         },
-        body: JSON.stringify({ model, max_tokens, messages }),
+        body: JSON.stringify(body),
       });
     } catch (networkErr) {
       throw new Error(
@@ -177,6 +180,31 @@
     return data.content.map((b) => b.text || '').join('\n');
   }
 
+  /**
+   * Parse a JSON object out of model output text. Structured outputs
+   * (output_config.format) should make this a plain JSON.parse in
+   * practice, but this stays defensive: it strips code fences and, if a
+   * direct parse fails, retries against the outermost {...} substring in
+   * case the model added stray prose around the JSON.
+   */
+  function parseJson(text) {
+    const cleaned = String(text || '').replace(/```json|```/gi, '').trim();
+    try {
+      return JSON.parse(cleaned);
+    } catch (e) {
+      const start = cleaned.indexOf('{');
+      const end = cleaned.lastIndexOf('}');
+      if (start !== -1 && end > start) {
+        try {
+          return JSON.parse(cleaned.slice(start, end + 1));
+        } catch (e2) {
+          // fall through to the error below
+        }
+      }
+      throw new Error('AIの応答をJSONとして解析できませんでした: ' + cleaned.slice(0, 200));
+    }
+  }
+
   function init() {
     injectGearButton();
   }
@@ -187,5 +215,5 @@
     init();
   }
 
-  window.AnthropicAPI = { getApiKey, setApiKey, createMessage, openKeyModal };
+  window.AnthropicAPI = { getApiKey, setApiKey, createMessage, openKeyModal, parseJson };
 })();

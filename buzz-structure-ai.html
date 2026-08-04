@@ -380,14 +380,34 @@ ${transcript || '(なし・タイトルと投稿者情報のみで分析)'}
 
 factorsは3〜5個程度。情報が少ない場合は、わかる範囲で一般的な傾向も交えつつ、憶測であることが分かるように書いてください。`;
 
+  const RESEARCH_SCHEMA = {
+    type: "object",
+    properties: {
+      summary: { type: "string" },
+      factors: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { label: { type: "string" }, body: { type: "string" } },
+          required: ["label", "body"],
+          additionalProperties: false
+        }
+      },
+      title_pattern: { type: "string" },
+      takeaways: { type: "string" }
+    },
+    required: ["summary", "factors", "title_pattern", "takeaways"],
+    additionalProperties: false
+  };
+
   try{
-    let text = await AnthropicAPI.createMessage({
+    const text = await AnthropicAPI.createMessage({
       model: "claude-sonnet-5",
       max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }]
+      messages: [{ role: "user", content: prompt }],
+      output_config: { format: { type: "json_schema", schema: RESEARCH_SCHEMA } }
     });
-    text = text.replace(/```json|```/g, "").trim();
-    const result = JSON.parse(text);
+    const result = AnthropicAPI.parseJson(text);
     renderResearchResult(result);
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">分析に失敗しました: ${escapeHtml(err.message)}</div>`;
@@ -462,14 +482,47 @@ genBtn.addEventListener('click', async () => {
 
 clipsは想定尺に応じて4〜7個程度、時系列順に。各clipのtagsにはテロップ・効果音・BGMの方向性を短く含めてください。`;
 
+  const PLAN_SCHEMA = {
+    type: "object",
+    properties: {
+      titles: { type: "array", items: { type: "string" } },
+      clips: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            time: { type: "string" },
+            label: { type: "string" },
+            isHook: { type: "boolean" },
+            description: { type: "string" },
+            tags: { type: "array", items: { type: "string" } }
+          },
+          required: ["time", "label", "isHook", "description", "tags"],
+          additionalProperties: false
+        }
+      },
+      tips: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { title: { type: "string" }, body: { type: "string" } },
+          required: ["title", "body"],
+          additionalProperties: false
+        }
+      }
+    },
+    required: ["titles", "clips", "tips"],
+    additionalProperties: false
+  };
+
   try{
-    let text = await AnthropicAPI.createMessage({
+    const text = await AnthropicAPI.createMessage({
       model: "claude-sonnet-5",
       max_tokens: 1500,
-      messages: [{ role: "user", content: prompt }]
+      messages: [{ role: "user", content: prompt }],
+      output_config: { format: { type: "json_schema", schema: PLAN_SCHEMA } }
     });
-    text = text.replace(/```json|```/g, "").trim();
-    const result = JSON.parse(text);
+    const result = AnthropicAPI.parseJson(text);
     renderResult(result);
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
