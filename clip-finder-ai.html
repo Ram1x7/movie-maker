@@ -95,6 +95,7 @@
 
 <script src="shared/nav.js"></script>
 <script src="shared/api-client.js"></script>
+<script src="shared/history.js"></script>
 <script src="shared/whisper.js"></script>
 <script>
 const videoDrop = document.getElementById('videoDrop');
@@ -383,6 +384,10 @@ scoreは1-10でバズりやすさの目安。文字起こしの内容(驚き・�
     lastClipsResult = result;
     renderResult(result);
     progress.textContent = '';
+    HistoryStore.save('clip-finder', {
+      label: genre || (result.clips && result.clips[0] && result.clips[0].title) || '切り抜き候補',
+      result,
+    });
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
     progress.textContent = '';
@@ -392,6 +397,14 @@ scoreは1-10でバズりやすさの目安。文字起こしの内容(驚き・�
 });
 
 let lastClipsResult = null;
+
+HistoryUI.init({
+  toolKey: 'clip-finder',
+  onRestore: (result) => {
+    lastClipsResult = result;
+    renderResult(result);
+  },
+});
 
 resultArea.addEventListener('click', (e) => {
   if(e.target && e.target.id === 'copyClipsJsonBtn' && lastClipsResult){

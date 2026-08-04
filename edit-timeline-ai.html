@@ -47,13 +47,15 @@
   <div class="panel">
     <div class="field">
       <label>バズる構成AIの結果 (企画モード・JSON・必須)</label>
+      <select id="planHistoryPicker" style="margin-bottom:8px;"><option value="">履歴から選択...</option></select>
       <textarea id="planJson" placeholder='「バズる構成AI」の企画モードで生成した結果画面の「この結果をコピー」ボタンから貼り付けてください'></textarea>
-      <div class="hint">構成案(フック・展開などの役割)の情報として使います。</div>
+      <div class="hint">構成案(フック・展開などの役割)の情報として使います。上のプルダウンから、バズる構成AIで過去に生成した結果を直接読み込むこともできます(このブラウザに保存されている分のみ)。</div>
     </div>
     <div class="field">
       <label>切り抜きファインダーAIの結果 (JSON・必須)</label>
+      <select id="clipsHistoryPicker" style="margin-bottom:8px;"><option value="">履歴から選択...</option></select>
       <textarea id="clipsJson" placeholder='「切り抜きファインダーAI」の結果画面の「この結果をコピー」ボタンから貼り付けてください'></textarea>
-      <div class="hint">実際の元動画から見つかった、使えそうな箇所(実タイムコード)の情報として使います。<br>※構成案と同じ元動画・同じ企画に基づいた組み合わせを想定しています。</div>
+      <div class="hint">実際の元動画から見つかった、使えそうな箇所(実タイムコード)の情報として使います。<br>※構成案と同じ元動画・同じ企画に基づいた組み合わせを想定しています。上のプルダウンから過去の結果を直接読み込むこともできます。</div>
     </div>
     <div class="field">
       <label>補足メモ (任意)</label>
@@ -70,12 +72,37 @@
 
 <script src="shared/nav.js"></script>
 <script src="shared/api-client.js"></script>
+<script src="shared/history.js"></script>
 <script>
 const genBtn = document.getElementById('genBtn');
 const resultArea = document.getElementById('resultArea');
 const planJsonInput = document.getElementById('planJson');
 const clipsJsonInput = document.getElementById('clipsJson');
 const noteInput = document.getElementById('note');
+const planHistoryPicker = document.getElementById('planHistoryPicker');
+const clipsHistoryPicker = document.getElementById('clipsHistoryPicker');
+
+function populateHistoryPicker(selectEl, toolKey){
+  const entries = HistoryStore.list(toolKey);
+  selectEl._entries = entries;
+  selectEl.innerHTML = `<option value="">履歴から選択...(${entries.length}件)</option>` +
+    entries.map((e, i) => `<option value="${i}">${escapeHtml(HistoryStore.fmtDate(e.savedAt))} - ${escapeHtml((e.label || '(タイトルなし)').slice(0, 40))}</option>`).join('');
+}
+populateHistoryPicker(planHistoryPicker, 'buzz-structure');
+populateHistoryPicker(clipsHistoryPicker, 'clip-finder');
+// 他のタブ/このページを開きっぱなしの間に生成された結果も選べるよう、開く直前に再取得する
+planHistoryPicker.addEventListener('mousedown', () => populateHistoryPicker(planHistoryPicker, 'buzz-structure'));
+clipsHistoryPicker.addEventListener('mousedown', () => populateHistoryPicker(clipsHistoryPicker, 'clip-finder'));
+planHistoryPicker.addEventListener('change', () => {
+  if(planHistoryPicker.value === '') return;
+  planJsonInput.value = JSON.stringify(planHistoryPicker._entries[planHistoryPicker.value].result);
+  planHistoryPicker.value = '';
+});
+clipsHistoryPicker.addEventListener('change', () => {
+  if(clipsHistoryPicker.value === '') return;
+  clipsJsonInput.value = JSON.stringify(clipsHistoryPicker._entries[clipsHistoryPicker.value].result);
+  clipsHistoryPicker.value = '';
+});
 
 genBtn.addEventListener('click', async () => {
   const planRaw = planJsonInput.value.trim();
@@ -172,11 +199,19 @@ ${JSON.stringify(clipsData)}
     });
     const result = AnthropicAPI.parseJson(text);
     renderResult(result);
+    HistoryStore.save('edit-timeline', { label: note || 'タイムライン', result });
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
   }finally{
     genBtn.disabled = false;
   }
+});
+
+HistoryUI.init({
+  toolKey: 'edit-timeline',
+  onRestore: (result) => {
+    renderResult(result);
+  },
 });
 
 function renderResult(result){
