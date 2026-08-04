@@ -58,7 +58,7 @@
       <select id="asrModel">
         <option value="Xenova/whisper-tiny">軽量 (速いが精度低め)</option>
         <option value="Xenova/whisper-base" selected>標準 (バランス型)</option>
-        <option value="Xenova/whisper-small">高精度 (重い・時間がかかる)</option>
+        <option value="Xenova/whisper-small">高精度 (重い・長い動画ではブラウザがクラッシュすることがあります)</option>
       </select>
       <div style="height:8px;"></div>
       <button class="sub-btn" id="transcribeBtn">動画から文字起こしを生成</button>
@@ -206,11 +206,22 @@ transcribeBtn.addEventListener('click', async () => {
     asrProgress.textContent = '先に「動画ファイル」を選択してください。';
     return;
   }
+  const modelName = asrModelSelect.value;
+
+  const switchWarning = WhisperUtil.checkModelSwitchRisk(modelName);
+  if(switchWarning && !confirm(switchWarning)) return;
+
+  try{
+    const duration = await WhisperUtil.getVideoDuration(videoFile);
+    const durationWarning = WhisperUtil.getModelDurationWarning(modelName, duration);
+    if(durationWarning && !confirm(durationWarning)) return;
+  }catch(e){ /* メタデータ取得失敗時は警告をスキップ */ }
+
   transcribeBtn.disabled = true;
   genBtn.disabled = true;
   try{
     const { lines, rawText, decodedSeconds } = await WhisperUtil.transcribeVideo(videoFile, {
-      modelName: asrModelSelect.value,
+      modelName,
       onStatus: (s) => { asrProgress.textContent = s; },
     });
 
