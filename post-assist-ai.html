@@ -79,6 +79,7 @@
 
 <script src="shared/nav.js"></script>
 <script src="shared/api-client.js"></script>
+<script src="shared/history.js"></script>
 <script>
 const genBtn = document.getElementById('genBtn');
 const resultArea = document.getElementById('resultArea');
@@ -249,11 +250,19 @@ telopsは文字起こしの主要な箇所ごとに、sfxは驚き・オチ・�
     });
     const result = AnthropicAPI.parseJson(text);
     renderResult(result, totalDuration);
+    HistoryStore.save('post-assist', { label: genre || 'テロップ/SE/BGM提案', result: { result, totalDuration } });
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
   }finally{
     genBtn.disabled = false;
   }
+});
+
+HistoryUI.init({
+  toolKey: 'post-assist',
+  onRestore: (payload) => {
+    renderResult(payload.result, payload.totalDuration);
+  },
 });
 
 function pctOf(timeStr, total){

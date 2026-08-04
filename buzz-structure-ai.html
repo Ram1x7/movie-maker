@@ -199,6 +199,7 @@
 
 <script src="shared/nav.js"></script>
 <script src="shared/api-client.js"></script>
+<script src="shared/history.js"></script>
 <script src="shared/whisper.js"></script>
 <script>
 const genBtn = document.getElementById('genBtn');
@@ -547,6 +548,7 @@ clipsは想定尺に応じて4〜7個程度、時系列順に。各clipのtags�
     const result = AnthropicAPI.parseJson(text);
     lastPlanResult = result;
     renderResult(result);
+    HistoryStore.save('buzz-structure', { label: topic, result });
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
   }finally{
@@ -555,6 +557,14 @@ clipsは想定尺に応じて4〜7個程度、時系列順に。各clipのtags�
 });
 
 let lastPlanResult = null;
+
+HistoryUI.init({
+  toolKey: 'buzz-structure',
+  onRestore: (result) => {
+    lastPlanResult = result;
+    renderResult(result);
+  },
+});
 
 resultArea.addEventListener('click', (e) => {
   if(e.target && e.target.id === 'copyPlanJsonBtn' && lastPlanResult){
