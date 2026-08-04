@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>編集タイムライン統合AI - Edit Timeline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
+<style>
+  .wrap{ grid-template-columns: 380px 1fr; }
+  @media (max-width: 940px){ .wrap{ grid-template-columns: 1fr; } }
+  input[type=text], textarea, select{
+    width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--text);
+    padding:10px 12px; border-radius:6px; font-family:'Noto Sans JP', sans-serif; font-size:13px; resize:vertical;
+  }
+  textarea{ min-height:100px; line-height:1.5; font-family:'JetBrains Mono', monospace; font-size:11.5px; }
+  .section-label{ margin:0 0 14px; }
+
+  .overall-note{ background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:22px; font-size:13px; color:#c7c5c1; line-height:1.7; }
+
+  .tl-row{ display:grid; grid-template-columns:40px 1fr; gap:14px; margin-bottom:14px; }
+  .tl-order{
+    width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:15px;
+    border:2px solid var(--accent); color:var(--accent); flex-shrink:0;
+  }
+  .tl-card{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px; }
+  .tl-head{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
+  .tl-role{ font-weight:700; font-size:14px; margin:0; }
+  .tl-range{ font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--cyan); background:var(--cyan-dim); padding:2px 8px; border-radius:4px; }
+  .tl-reason{ font-size:13px; color:#c7c5c1; line-height:1.65; margin:0 0 8px; }
+  .tl-tags{ display:flex; gap:6px; flex-wrap:wrap; }
+  .tl-tags span{ font-size:10.5px; color:var(--accent); background:var(--accent-dim); padding:3px 8px; border-radius:4px; font-family:'JetBrains Mono', monospace; }
+  .tl-tags span.sfx{ color:var(--gold); background:var(--gold-dim); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="rec"></div>
+  <h1>Edit Timeline AI</h1>
+  <div class="tag">v1 / 構成案 × 切り抜き候補の統合タイムライン</div>
+</div>
+
+<div class="wrap">
+  <div class="panel">
+    <div class="field">
+      <label>バズる構成AIの結果 (企画モード・JSON・必須)</label>
+      <textarea id="planJson" placeholder='「バズる構成AI」の企画モードで生成した結果画面の「この結果をコピー」ボタンから貼り付けてください'></textarea>
+      <div class="hint">構成案(フック・展開などの役割)の情報として使います。</div>
+    </div>
+    <div class="field">
+      <label>切り抜きファインダーAIの結果 (JSON・必須)</label>
+      <textarea id="clipsJson" placeholder='「切り抜きファインダーAI」の結果画面の「この結果をコピー」ボタンから貼り付けてください'></textarea>
+      <div class="hint">実際の元動画から見つかった、使えそうな箇所(実タイムコード)の情報として使います。<br>※構成案と同じ元動画・同じ企画に基づいた組み合わせを想定しています。</div>
+    </div>
+    <div class="field">
+      <label>補足メモ (任意)</label>
+      <input type="text" id="note" placeholder="例: オチは絶対にこのシーンを使いたい、尺は60秒以内に収めたい など">
+    </div>
+    <button class="gen-btn" id="genBtn">編集タイムラインを生成する</button>
+    <div class="hint">構成案の各役割(フック・展開・オチなど)に、切り抜き候補の中から最も適した実際のタイムコードを割り当て、CapCut等で編集する際にそのまま見ながら作業できるタイムラインを作成します。</div>
+  </div>
+
+  <div class="result-area" id="resultArea">
+    <div class="empty">左に2つのAIの結果(JSON)を貼り付けて<br>「編集タイムラインを生成する」を押してください</div>
+  </div>
+</div>
+
+<script src="shared/nav.js"></script>
+<script src="shared/api-client.js"></script>
+<script>
+const genBtn = document.getElementById('genBtn');
+const resultArea = document.getElementById('resultArea');
+const planJsonInput = document.getElementById('planJson');
+const clipsJsonInput = document.getElementById('clipsJson');
+const noteInput = document.getElementById('note');
+
+genBtn.addEventListener('click', async () => {
+  const planRaw = planJsonInput.value.trim();
+  const clipsRaw = clipsJsonInput.value.trim();
+  const note = noteInput.value.trim();
+
+  if(!planRaw || !clipsRaw){
+    resultArea.innerHTML = '<div class="empty err">構成案・切り抜き候補、両方のJSONが必要です。</div>';
+    return;
+  }
+
+  let planData, clipsData;
+  try{
+    planData = JSON.parse(planRaw);
+  }catch(e){
+    resultArea.innerHTML = '<div class="empty err">「バズる構成AIの結果」がJSONとして読み取れませんでした。「この結果をコピー」ボタンからコピーした内容をそのまま貼り付けてください。</div>';
+    return;
+  }
+  try{
+    clipsData = JSON.parse(clipsRaw);
+  }catch(e){
+    resultArea.innerHTML = '<div class="empty err">「切り抜きファインダーAIの結果」がJSONとして読み取れませんでした。「この結果をコピー」ボタンからコピーした内容をそのまま貼り付けてください。</div>';
+    return;
+  }
+
+  genBtn.disabled = true;
+  resultArea.innerHTML = '<div class="loading">統合中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+
+  const prompt = `あなたはショート動画の編集アシスタントです。以下の2つの情報を統合し、CapCut Proなどの動画編集ソフトで実際に手作業編集する際にそのまま見ながら作業できる「編集タイムライン」を1つ作成してください。
+
+【構成案(狙いたい流れ・各パートの役割)】
+${JSON.stringify(planData)}
+
+【切り抜き候補(実際の元動画から見つかった、使えそうな箇所とその実タイムコード)】
+${JSON.stringify(clipsData)}
+
+補足メモ: ${note || '(なし)'}
+
+構成案の各パート(フック・展開・オチなど)が担う役割に対して、切り抜き候補の中から最も適した実際のタイムコード範囲を割り当て、時系列順に並べた編集タイムラインを作成してください。
+
+注意点:
+- 切り抜き候補(source_range)は必ず切り抜き候補リストに実際に存在する start〜end の範囲から選んでください。存在しない時刻を捏造しないでください。
+- 構成案のある役割に対して、切り抜き候補の中に適切な箇所がどうしても見当たらない場合は、無理に割り当てず、overall_note にその旨を明記してください(例: 「オチに該当する箇所なし。テロップのみで繋ぐことを検討」)。
+- 明確な意図がない限り、同じ切り抜き候補を複数の役割に重複して使わないでください。
+- telop・sfxには、構成案側のtagsや切り抜き候補側のtags/reasonも参考にしつつ、その箇所に最適な具体案を書いてください。
+
+必ず以下のJSON形式のみで出力してください。前置き、説明、コードブロック記号は一切付けないでください。
+
+{
+  "timeline": [
+    {
+      "order": 1,
+      "role": "フック",
+      "source_range": "0:12-0:20",
+      "reason": "この箇所をこの役割に割り当てた理由",
+      "telop": "テロップ案",
+      "sfx": "効果音/BGM案"
+    }
+  ],
+  "overall_note": "全体を通しての補足(尺のバランス、役割に対して適切な候補が無かった箇所など)"
+}`;
+
+  const TIMELINE_SCHEMA = {
+    type: "object",
+    properties: {
+      timeline: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            order: { type: "integer" },
+            role: { type: "string" },
+            source_range: { type: "string" },
+            reason: { type: "string" },
+            telop: { type: "string" },
+            sfx: { type: "string" }
+          },
+          required: ["order", "role", "source_range", "reason", "telop", "sfx"],
+          additionalProperties: false
+        }
+      },
+      overall_note: { type: "string" }
+    },
+    required: ["timeline", "overall_note"],
+    additionalProperties: false
+  };
+
+  try{
+    const text = await AnthropicAPI.createMessage({
+      model: "claude-sonnet-5",
+      max_tokens: 4000,
+      messages: [{ role: "user", content: prompt }],
+      output_config: { format: { type: "json_schema", schema: TIMELINE_SCHEMA } }
+    });
+    const result = AnthropicAPI.parseJson(text);
+    renderResult(result);
+  }catch(err){
+    resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
+  }finally{
+    genBtn.disabled = false;
+  }
+});
+
+function renderResult(result){
+  const timeline = (result.timeline || []).slice().sort((a,b) => (a.order||0) - (b.order||0));
+
+  let html = '<div class="section-label">// Edit Timeline</div>';
+
+  if(timeline.length === 0){
+    html += '<div class="empty">タイムラインを生成できませんでした。</div>';
+  } else {
+    timeline.forEach(t => {
+      html += `<div class="tl-row">
+        <div class="tl-order">${escapeHtml(t.order ?? '')}</div>
+        <div class="tl-card">
+          <div class="tl-head">
+            <p class="tl-role">${escapeHtml(t.role || '')}</p>
+            <span class="tl-range">${escapeHtml(t.source_range || '')}</span>
+          </div>
+          <p class="tl-reason">${escapeHtml(t.reason || '')}</p>
+          <div class="tl-tags">
+            ${t.telop ? `<span>テロップ: ${escapeHtml(t.telop)}</span>` : ''}
+            ${t.sfx ? `<span class="sfx">SE/BGM: ${escapeHtml(t.sfx)}</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+    });
+  }
+
+  if(result.overall_note){
+    html += '<div class="section-label">// Note</div>';
+    html += `<div class="overall-note">${escapeHtml(result.overall_note)}</div>`;
+  }
+
+  resultArea.innerHTML = html;
+}
+
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = str == null ? '' : String(str);
+  return div.innerHTML;
+}
+</script>
+
+</body>
+</html>

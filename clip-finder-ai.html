@@ -358,6 +358,7 @@ scoreは1-10でバズりやすさの目安。文字起こしの内容(驚き・�
       output_config: { format: { type: "json_schema", schema: CLIPS_SCHEMA } }
     });
     const result = AnthropicAPI.parseJson(text);
+    lastClipsResult = result;
     renderResult(result);
     progress.textContent = '';
   }catch(err){
@@ -368,9 +369,23 @@ scoreは1-10でバズりやすさの目安。文字起こしの内容(驚き・�
   }
 });
 
+let lastClipsResult = null;
+
+resultArea.addEventListener('click', (e) => {
+  if(e.target && e.target.id === 'copyClipsJsonBtn' && lastClipsResult){
+    navigator.clipboard.writeText(JSON.stringify(lastClipsResult)).then(() => {
+      e.target.textContent = 'コピーしました';
+      setTimeout(() => { e.target.textContent = 'この結果をコピー(編集タイムライン統合AI用)'; }, 2000);
+    }).catch(() => {
+      e.target.textContent = 'コピーに失敗しました';
+    });
+  }
+});
+
 function renderResult(result){
   const clips = (result.clips || []).slice().sort((a,b) => (b.score||0) - (a.score||0));
-  let html = '<div class="section-label">// Suggested Clips (score順)</div>';
+  let html = '<button type="button" class="sub-btn" id="copyClipsJsonBtn" style="margin-bottom:16px;">この結果をコピー(編集タイムライン統合AI用)</button>';
+  html += '<div class="section-label">// Suggested Clips (score順)</div>';
   clips.forEach(c => {
     const isHigh = (c.score||0) >= 8;
     html += `<div class="clipcard">
