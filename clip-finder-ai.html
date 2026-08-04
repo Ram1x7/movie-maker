@@ -6,72 +6,17 @@
 <title>切り抜きファインダーAI - Clip Finder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Noto+Sans+JP:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/theme.css">
 <style>
-  :root{
-    --bg: #14161a;
-    --panel: #1c1f26;
-    --panel2: #22262f;
-    --line: #2c313b;
-    --text: #e9e7e2;
-    --sub: #8b8d97;
-    --accent: #ff6b35;
-    --accent-dim: #ff6b3522;
-    --cyan: #4ecdc4;
-    --cyan-dim: #4ecdc422;
-    --gold: #f4c95d;
-  }
-  *{box-sizing:border-box;}
-  body{ margin:0; background:var(--bg); color:var(--text); font-family:'Noto Sans JP', sans-serif; min-height:100vh; }
-  .topbar{
-    display:flex; align-items:center; gap:12px; padding:18px 28px;
-    border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg, #17191f 0%, #14161a 100%);
-  }
-  .topbar .rec{ width:9px;height:9px;border-radius:50%;background:var(--accent); box-shadow:0 0 10px var(--accent); animation:pulse 1.6s infinite; }
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-  .topbar h1{ font-family:'Space Grotesk', sans-serif; font-size:16px; font-weight:700; letter-spacing:.04em; margin:0; text-transform:uppercase; }
-  .topbar .tag{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--sub); margin-left:auto; }
-  .wrap{ display:grid; grid-template-columns: 360px 1fr; gap:1px; background:var(--line); min-height:calc(100vh - 60px); }
+  .wrap{ grid-template-columns: 360px 1fr; }
   @media (max-width: 900px){ .wrap{ grid-template-columns: 1fr; } }
-  .panel{ background:var(--bg); padding:24px; }
-  .field{ margin-bottom:18px; }
-  label{ display:block; font-size:11px; color:var(--sub); font-family:'JetBrains Mono', monospace; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
   input[type=text], textarea, select{
     width:100%; background:var(--panel2); border:1px solid var(--line); color:var(--text);
     padding:10px 12px; border-radius:6px; font-family:'Noto Sans JP', sans-serif; font-size:13px; resize:vertical;
   }
   textarea{ min-height:110px; line-height:1.5; font-family:'JetBrains Mono', monospace; font-size:12px; }
-  input:focus, textarea:focus, select:focus{ outline:none; border-color:var(--accent); }
-  .file-drop{
-    border:1px dashed var(--line); border-radius:8px; padding:14px; text-align:center;
-    font-size:12px; color:var(--sub); cursor:pointer; transition:border-color .15s;
-  }
-  .file-drop:hover{ border-color:var(--accent); color:var(--text); }
-  .file-drop input{ display:none; }
-  .file-name{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--cyan); margin-top:6px; word-break:break-all; }
-  .size-warn{ color:#ff6b6b; font-size:11px; margin-top:6px; line-height:1.6; font-family:'Noto Sans JP', sans-serif; }
-  .gen-btn{
-    width:100%; padding:13px; border-radius:6px; border:none; background:var(--accent); color:#14161a;
-    font-weight:700; font-size:14px; cursor:pointer; letter-spacing:.02em; font-family:'Space Grotesk', sans-serif;
-  }
-  .gen-btn:disabled{ opacity:.5; cursor:not-allowed; }
-  .sub-btn{
-    width:100%; padding:10px; border-radius:6px; border:1px solid var(--cyan); background:transparent;
-    color:var(--cyan); font-weight:600; font-size:12.5px; cursor:pointer; font-family:'Space Grotesk', sans-serif;
-  }
-  .sub-btn:disabled{ opacity:.4; cursor:not-allowed; }
-  .asr-box{ border:1px solid var(--line); border-radius:8px; padding:14px; margin-bottom:18px; background:var(--panel); }
-  .asr-box label{ margin-top:0; }
-  .asr-progress{ font-size:11px; color:var(--gold); font-family:'JetBrains Mono', monospace; margin-top:8px; min-height:14px; line-height:1.5; }
-  .hint{ font-size:11px; color:var(--sub); margin-top:6px; line-height:1.5; }
   .progress{ font-size:11px; color:var(--gold); font-family:'JetBrains Mono', monospace; margin-top:8px; min-height:14px; }
-  .result-area{ padding:28px 32px; overflow-x:auto; }
-  .empty{ color:var(--sub); font-size:13px; height:100%; display:flex; align-items:center; justify-content:center; min-height:300px; text-align:center; line-height:1.8; font-family:'JetBrains Mono', monospace; }
-  .loading{ display:flex; gap:6px; align-items:center; color:var(--sub); font-family:'JetBrains Mono', monospace; font-size:12px; min-height:300px; justify-content:center; }
-  .dot{ width:6px;height:6px;border-radius:50%;background:var(--accent); animation:blink 1s infinite; }
-  .dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
-  @keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
-  .section-label{ font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--cyan); text-transform:uppercase; letter-spacing:.08em; margin:0 0 14px; }
+  .section-label{ margin:0 0 14px; }
   .clipcard{
     background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:14px;
     display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:start;
@@ -88,8 +33,6 @@
   .clip-reason{ font-size:13px; color:#c7c5c1; line-height:1.65; margin:0 0 8px; }
   .clip-tags{ display:flex; gap:6px; flex-wrap:wrap; }
   .clip-tags span{ font-size:10.5px; color:var(--cyan); background:var(--cyan-dim); padding:3px 8px; border-radius:4px; font-family:'JetBrains Mono', monospace; }
-  .err{ color:#ff6b6b; font-size:12.5px; font-family:'JetBrains Mono', monospace; }
-  video, canvas{ display:none; }
 </style>
 </head>
 <body>
@@ -150,6 +93,9 @@
 <video id="hiddenVideo" muted playsinline></video>
 <canvas id="hiddenCanvas"></canvas>
 
+<script src="shared/nav.js"></script>
+<script src="shared/api-client.js"></script>
+<script src="shared/whisper.js"></script>
 <script>
 const videoDrop = document.getElementById('videoDrop');
 const videoInput = document.getElementById('videoInput');
@@ -169,49 +115,22 @@ const asrModelSelect = document.getElementById('asrModel');
 const ASR_DEFAULT_HINT = asrProgress.textContent;
 
 let videoFile = null;
-let cachedTranscriber = null;
-let cachedTranscriberModel = null;
 
-const SIZE_WARN_BYTES = 500 * 1024 * 1024; // 500MB
-const DURATION_WARN_SEC = 20 * 60; // 20分
-
-videoInput.addEventListener('change', () => {
+videoInput.addEventListener('change', async () => {
   videoFile = videoInput.files[0];
   videoName.textContent = videoFile ? videoFile.name : '';
   asrProgress.textContent = ASR_DEFAULT_HINT;
   document.querySelectorAll('#videoDrop .size-warn').forEach(el => el.remove());
-  if(videoFile) checkVideoSafety(videoFile);
-});
-
-function getVideoDuration(file){
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const v = document.createElement('video');
-    v.preload = 'metadata';
-    v.onloadedmetadata = () => { URL.revokeObjectURL(url); resolve(v.duration); };
-    v.onerror = () => { URL.revokeObjectURL(url); reject(new Error('metadata read failed')); };
-    v.src = url;
-  });
-}
-
-async function checkVideoSafety(file){
-  const warnings = [];
-  if(file.size > SIZE_WARN_BYTES){
-    warnings.push(`ファイルサイズが大きめです(${(file.size/1024/1024).toFixed(0)}MB)。処理が重くなる、またはブラウザが固まる可能性があります。`);
-  }
-  try{
-    const duration = await getVideoDuration(file);
-    if(duration > DURATION_WARN_SEC){
-      warnings.push(`動画が長め(約${Math.round(duration/60)}分)です。文字起こしに時間がかかる、またはメモリ不足になる可能性があります。`);
+  if(videoFile){
+    const warnings = await WhisperUtil.checkVideoSafety(videoFile);
+    if(warnings.length > 0){
+      const div = document.createElement('div');
+      div.className = 'size-warn';
+      div.innerHTML = '⚠ ' + warnings.map(escapeHtml).join('<br>⚠ ');
+      videoName.after(div);
     }
-  }catch(e){ /* メタデータ取得失敗時は無視 */ }
-  if(warnings.length > 0){
-    const div = document.createElement('div');
-    div.className = 'size-warn';
-    div.innerHTML = '⚠ ' + warnings.join('<br>⚠ ');
-    videoName.after(div);
   }
-}
+});
 
 subDrop.addEventListener('click', () => subInput.click());
 
@@ -280,32 +199,6 @@ function fmtTime(s){
     : `${m}:${String(sec).padStart(2,'0')}`;
 }
 
-async function decodeAudioTo16kMono(file){
-  const arrayBuffer = await file.arrayBuffer();
-  const tmpCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const decoded = await tmpCtx.decodeAudioData(arrayBuffer);
-  const targetRate = 16000;
-  const offlineCtx = new OfflineAudioContext(1, Math.ceil(decoded.duration * targetRate), targetRate);
-  const source = offlineCtx.createBufferSource();
-  source.buffer = decoded;
-  source.connect(offlineCtx.destination);
-  source.start(0);
-  const rendered = await offlineCtx.startRendering();
-  tmpCtx.close();
-  return rendered.getChannelData(0);
-}
-
-async function getTranscriber(modelName, onProgress){
-  if(cachedTranscriber && cachedTranscriberModel === modelName) return cachedTranscriber;
-  const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
-  const transcriber = await pipeline('automatic-speech-recognition', modelName, {
-    progress_callback: onProgress
-  });
-  cachedTranscriber = transcriber;
-  cachedTranscriberModel = modelName;
-  return transcriber;
-}
-
 transcribeBtn.addEventListener('click', async () => {
   if(!videoFile){
     asrProgress.textContent = '先に「動画ファイル」を選択してください。';
@@ -314,37 +207,15 @@ transcribeBtn.addEventListener('click', async () => {
   transcribeBtn.disabled = true;
   genBtn.disabled = true;
   try{
-    asrProgress.textContent = '音声データを準備中...';
-    const audioData = await decodeAudioTo16kMono(videoFile);
-
-    const modelName = asrModelSelect.value;
-    asrProgress.textContent = 'モデルを読み込み中... (初回のみ時間がかかります)';
-    const transcriber = await getTranscriber(modelName, (p) => {
-      if(p.status === 'progress' && p.file){
-        asrProgress.textContent = `モデル読み込み中: ${p.file} (${Math.round(p.progress||0)}%)`;
-      }
+    const { lines, rawText } = await WhisperUtil.transcribeVideo(videoFile, {
+      modelName: asrModelSelect.value,
+      onStatus: (s) => { asrProgress.textContent = s; },
     });
 
-    asrProgress.textContent = '文字起こし中...(動画の長さによって数分かかることがあります)';
-    const output = await transcriber(audioData, {
-      language: 'japanese',
-      task: 'transcribe',
-      chunk_length_s: 30,
-      stride_length_s: 5,
-      return_timestamps: true
-    });
-
-    const chunks = output.chunks || [];
-    const lines = chunks.map(c => {
-      const start = (c.timestamp && c.timestamp[0]) || 0;
-      const txt = (c.text || '').trim();
-      return txt ? `[${fmtTime(start)}] ${txt}` : null;
-    }).filter(Boolean);
-
-    if(lines.length === 0 && output.text){
-      transcriptText.value = `[0:00] ${output.text.trim()}`;
+    if(lines.length === 0 && rawText){
+      transcriptText.value = `[0:00] ${rawText}`;
     } else {
-      transcriptText.value = lines.join('\n');
+      transcriptText.value = lines.map(l => `[${fmtTime(l.time)}] ${l.text}`).join('\n');
     }
     asrProgress.textContent = `完了: ${lines.length || 1}セグメントを生成しました。内容を確認・修正してから切り抜き提案を実行してください。`;
   }catch(err){
@@ -454,23 +325,17 @@ scoreは1-10でバズりやすさの目安。文字起こしの内容(驚き・�
   progress.textContent = 'AIが解析中...';
 
   try{
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 2000,
-        messages: [{ role: "user", content: contentBlocks }]
-      })
+    let text = await AnthropicAPI.createMessage({
+      model: "claude-sonnet-5",
+      max_tokens: 2000,
+      messages: [{ role: "user", content: contentBlocks }]
     });
-    const data = await response.json();
-    let text = data.content.map(b => b.text || "").join("\n");
     text = text.replace(/```json|```/g, "").trim();
     const result = JSON.parse(text);
     renderResult(result);
     progress.textContent = '';
   }catch(err){
-    resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${err.message}</div>`;
+    resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
     progress.textContent = '';
   }finally{
     genBtn.disabled = false;
