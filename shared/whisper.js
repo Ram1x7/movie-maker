@@ -69,10 +69,45 @@
     const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
     const transcriber = await pipeline('automatic-speech-recognition', modelName, {
       progress_callback: onProgress,
+      // Force the quantized (int8) weights explicitly rather than relying on
+      // the library default — quantized models use roughly a quarter of the
+      // memory of full-precision ones, which matters a lot for the tab's
+      // WASM heap on larger models like whisper-small.
+      quantized: true,
     });
     cachedTranscriber = transcriber;
     cachedTranscriberModel = modelName;
     return transcriber;
+  }
+
+  /**
+   * WebAssembly linear memory only grows, it never shrinks — so switching
+   * to a different (especially larger) Whisper model within the same page
+   * load stacks its memory on top of whatever the previous model already
+   * allocated, rather than freeing it. This is a common cause of the tab
+   * silently crashing/reloading when a user tries a heavier model after
+   * already running a lighter one. Returns a confirmation message if a
+   * switch is about to happen, or null if it's safe (first load, or same
+   * model as already cached).
+   */
+  function checkModelSwitchRisk(modelName) {
+    if (cachedTranscriberModel && cachedTranscriberModel !== modelName) {
+      return `既に「${cachedTranscriberModel}」を読み込んだ状態から別のモデルに切り替えようとしています。ブラウザのメモリ使用量は読み込むほど増えていき、途中で解放されないため、このままだとメモリ不足でブラウザがクラッシュ(強制リロード)しやすくなります。\n\n一度ページを再読み込みしてから、このモデルで最初からお試しいただくことを強くおすすめします。それでも続行しますか?`;
+    }
+    return null;
+  }
+
+  /**
+   * Warn before starting a memory-heavy combination: the "高精度"
+   * (whisper-small) model on a longer video. This model roughly doubles
+   * the memory footprint of the "標準" (whisper-base) model, so the safe
+   * duration threshold is lower.
+   */
+  function getModelDurationWarning(modelName, durationSec) {
+    if (modelName === 'Xenova/whisper-small' && durationSec > 8 * 60) {
+      return `「高精度」モデルは動画が長い(約${Math.round(durationSec / 60)}分)とメモリ不足でブラウザがクラッシュしやすくなります。長い動画では「標準」または「軽量」モデルの使用をおすすめします。このまま「高精度」で続行しますか?`;
+    }
+    return null;
   }
 
   function fmtTime(s) {
@@ -135,6 +170,8 @@
     checkVideoSafety,
     decodeAudioTo16kMono,
     getTranscriber,
+    checkModelSwitchRisk,
+    getModelDurationWarning,
     transcribeVideo,
     fmtTime,
   };
