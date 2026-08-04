@@ -351,7 +351,7 @@ scoreは1-10でバズりやすさの目安。文字起こしの内容(驚き・�
   try{
     const text = await AnthropicAPI.createMessage({
       model: "claude-sonnet-5",
-      max_tokens: 2000,
+      max_tokens: 4000,
       messages: [{ role: "user", content: contentBlocks }],
       output_config: { format: { type: "json_schema", schema: CLIPS_SCHEMA } }
     });

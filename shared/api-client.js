@@ -130,7 +130,7 @@
     else topbar.appendChild(btn);
   }
 
-  async function createMessage({ model, max_tokens, messages, output_config }) {
+  async function createMessage({ model, max_tokens, messages, output_config, thinking }) {
     const apiKey = getApiKey();
     if (!apiKey) {
       openKeyModal();
@@ -139,6 +139,12 @@
 
     const body = { model, max_tokens, messages };
     if (output_config) body.output_config = output_config;
+    // Default to no extended thinking: these tools do single-shot structured
+    // JSON generation, not multi-step reasoning, and thinking eats into
+    // max_tokens before any output text is written (causing truncated,
+    // unparseable JSON on longer results). Pass thinking explicitly to
+    // override.
+    body.thinking = thinking || { type: 'disabled' };
 
     let response;
     try {
@@ -175,6 +181,12 @@
 
     if (!data || !Array.isArray(data.content)) {
       throw new Error('APIから予期しない形式のレスポンスが返されました。');
+    }
+
+    if (data.stop_reason === 'max_tokens') {
+      throw new Error(
+        'AIの応答がmax_tokensの上限で途中で切れました。入力内容(文字起こし等)を短くするか、もう一度お試しください。'
+      );
     }
 
     return data.content.map((b) => b.text || '').join('\n');
