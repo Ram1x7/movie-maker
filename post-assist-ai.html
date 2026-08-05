@@ -43,6 +43,15 @@
   .bgm-chip{ font-size:12px; background:var(--cyan-dim); color:var(--cyan); padding:5px 12px; border-radius:20px; }
   .bgm-card p{ font-size:13px; color:#c7c5c1; line-height:1.7; margin:6px 0; }
   .bgm-section{ font-family:'JetBrains Mono', monospace; font-size:11.5px; color:var(--sub); }
+  .bgm-keywords{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+  .bgm-keyword-chip{ font-size:11px; background:var(--panel2); color:var(--text); padding:4px 10px; border-radius:14px; font-family:'JetBrains Mono', monospace; }
+  .bgm-sites{ margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+  .bgm-sites-title{ font-size:11px; color:var(--sub); margin-bottom:8px; font-family:'JetBrains Mono', monospace; text-transform:uppercase; letter-spacing:.06em; }
+  .bgm-site-row{ display:flex; align-items:baseline; gap:8px; margin-bottom:6px; flex-wrap:wrap; }
+  .bgm-site-row a{ color:var(--cyan); font-size:12.5px; font-weight:700; text-decoration:none; }
+  .bgm-site-row a:hover{ text-decoration:underline; }
+  .bgm-site-row span{ font-size:11.5px; color:var(--sub); }
+  .bgm-caveat{ font-size:11px; color:var(--gold); margin-top:12px; line-height:1.7; }
 </style>
 </head>
 <body>
@@ -179,12 +188,14 @@ ${transcriptForPrompt}
     "notes": "BGMの入れ方・転換ポイントについての補足",
     "sections": [
       { "range": "0:00-0:10", "description": "この区間のBGM/展開の説明" }
-    ]
+    ],
+    "search_keywords": ["フリーBGM素材サイトで検索する際に使えるキーワード"]
   }
 }
 
 styleは "emphasis"(強調・大きめ), "normal"(通常テロップ), "tsukkomi"(ツッコミ/一言コメント風) のいずれか。
-telopsは文字起こしの主要な箇所ごとに、sfxは驚き・オチ・間合いなど効果音が映える箇所に絞って提案してください。`;
+telopsは文字起こしの主要な箇所ごとに、sfxは驚き・オチ・間合いなど効果音が映える箇所に絞って提案してください。
+bgm.search_keywordsは3〜5個。実在しない曲名やアーティスト名は絶対に創作せず、ジャンル・雰囲気・テンポ・シーンの展開(例: "コミカル 軽快", "緊張感 ピアノ", "高揚感 EDM")など、フリーBGM素材サイトの検索窓にそのまま入力できる短いキーワードにしてください。`;
 
   const POST_SCHEMA = {
     type: "object",
@@ -231,9 +242,10 @@ telopsは文字起こしの主要な箇所ごとに、sfxは驚き・オチ・�
               required: ["range", "description"],
               additionalProperties: false
             }
-          }
+          },
+          search_keywords: { type: "array", items: { type: "string" } }
         },
-        required: ["genre", "mood", "tempo", "notes", "sections"],
+        required: ["genre", "mood", "tempo", "notes", "sections", "search_keywords"],
         additionalProperties: false
       }
     },
@@ -329,9 +341,35 @@ function renderResult(result, totalDuration){
     </div>
     <p>${escapeHtml(bgm.notes||'')}</p>
     ${(bgm.sections||[]).map(s => `<p class="bgm-section">[${escapeHtml(s.range||'')}] ${escapeHtml(s.description||'')}</p>`).join('')}
+    ${(bgm.search_keywords||[]).length ? `<div class="bgm-keywords">${bgm.search_keywords.map(k => `<span class="bgm-keyword-chip">${escapeHtml(k)}</span>`).join('')}</div>` : ''}
+    ${renderFreeBgmSitesBlock()}
   </div>`;
 
   resultArea.innerHTML = html;
+}
+
+// Curated by hand, not AI-generated: well-known, long-established free/royalty-free
+// BGM libraries popular with Japanese short-form/切り抜き creators. Kept static
+// (rather than having the model name specific tracks or URLs) to avoid presenting
+// fabricated track names or stale links as fact.
+const FREE_BGM_SITES = [
+  { name: 'DOVA-SYNDROME', url: 'https://dova-s.jp/', note: '幅広いジャンルを扱う定番の無料BGM/効果音サイト' },
+  { name: '甘茶の音楽工房', url: 'https://amachamusic.chagasi.com/', note: 'コミカル〜落ち着いた曲まで幅広い老舗サイト' },
+  { name: 'Otologic', url: 'https://otologic.jp/', note: '効果音・BGMともに種類が豊富' },
+  { name: '魔王魂', url: 'https://maou.audio/', note: 'ゲーム/動画向けのBGM・効果音が豊富な定番サイト' },
+  { name: 'HURT RECORD', url: 'https://hurtrecord.com/', note: 'シネマティック〜EDM系まで幅広く対応' },
+  { name: 'YouTube オーディオライブラリ', url: 'https://www.youtube.com/audiolibrary', note: 'YouTube Studio内で利用可能。著作権表示不要な曲も多い' },
+];
+
+function renderFreeBgmSitesBlock(){
+  const sitesHtml = FREE_BGM_SITES.map(s =>
+    `<div class="bgm-site-row"><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener">${escapeHtml(s.name)}</a><span>${escapeHtml(s.note)}</span></div>`
+  ).join('');
+  return `<div class="bgm-sites">
+    <div class="bgm-sites-title">// Free BGM Sources (上のキーワードで検索してみてください)</div>
+    ${sitesHtml}
+    <p class="bgm-caveat">⚠ 「フリー」素材でも、サイト/曲ごとにクレジット表記の要否・商用利用可否・収益化動画での利用条件などのライセンス規約が異なります。使用前に必ず各サイト・各曲の利用規約をご確認ください。</p>
+  </div>`;
 }
 
 function escapeHtml(str){
