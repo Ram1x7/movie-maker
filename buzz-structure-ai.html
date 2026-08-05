@@ -80,6 +80,13 @@
   .factor-item{ background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
   .factor-item .f-label{ font-size:12px; font-weight:700; color:var(--accent); margin:0 0 4px; }
   .factor-item p{ font-size:13px; color:#c7c5c1; line-height:1.65; margin:0; }
+
+  .video-entry-card{ border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:16px; background:var(--panel); }
+  .video-entry-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+  .video-entry-num{ font-family:'Space Grotesk', sans-serif; font-weight:700; font-size:12.5px; color:var(--accent); }
+  .video-entry-remove{ background:none; border:1px solid var(--line); color:var(--sub); width:26px; height:26px; border-radius:6px; cursor:pointer; font-size:12px; line-height:1; flex-shrink:0; }
+  .video-entry-remove:hover{ color:var(--text); background:var(--panel2); }
+  .video-entry-remove:disabled{ opacity:.35; cursor:not-allowed; }
 </style>
 </head>
 <body>
@@ -128,64 +135,10 @@
     </div>
 
     <div id="researchPanel" style="display:none;">
-      <div class="field">
-        <label>動画URL (TikTok / YouTube)</label>
-        <input type="text" id="videoUrl" placeholder="https://www.tiktok.com/@.../video/... または https://youtube.com/shorts/...">
-      </div>
-      <button class="sub-btn" id="fetchOembedBtn" style="margin-bottom:8px;">動画情報を取得</button>
-      <div class="hint" id="oembedHint" style="margin-bottom:8px;">タイトル・投稿者・サムネイルをoEmbedで自動取得します(キー不要)。TikTok側の制限で取得できない場合は下の「手動で入力する」から進められます。</div>
-      <div class="hint" id="oembedFallbackToggle" style="margin-bottom:18px; cursor:pointer; text-decoration:underline;">手動で入力する</div>
-
-      <div class="oembed-card" id="oembedCard">
-        <img id="oembedThumb" src="" alt="">
-        <div class="info">
-          <p class="t" id="oembedTitle"></p>
-          <p class="a" id="oembedAuthor"></p>
-        </div>
-      </div>
-
-      <div id="oembedManual" style="display:none; margin-bottom:18px;">
-        <div class="field">
-          <label>タイトル(手動)</label>
-          <input type="text" id="manualTitle" placeholder="動画のタイトル">
-        </div>
-        <div class="field">
-          <label>投稿者(手動)</label>
-          <input type="text" id="manualAuthor" placeholder="投稿者名">
-        </div>
-        <button class="sub-btn" id="useManualOembedBtn">この情報を使う</button>
-      </div>
-
-      <div class="field">
-        <label>動画ファイル (任意・自動文字起こし用)</label>
-        <div class="file-drop" id="videoDrop">
-          クリックして動画を選択(保存済みのもの)
-          <input type="file" id="videoInput" accept="video/*">
-          <div class="file-name" id="videoName"></div>
-        </div>
-      </div>
-      <div class="asr-box">
-        <label>文字起こしモデル</label>
-        <select id="asrModel">
-          <option value="Xenova/whisper-tiny">軽量 (速いが精度低め)</option>
-          <option value="Xenova/whisper-base" selected>標準 (バランス型)</option>
-          <option value="Xenova/whisper-small">高精度 (重い・長い動画ではブラウザがクラッシュすることがあります)</option>
-        </select>
-        <div style="height:8px;"></div>
-        <button class="sub-btn" id="transcribeBtn">動画から文字起こしを生成</button>
-        <div class="asr-progress" id="asrProgress">処理はすべて端末内で行われ、動画はどこにも送信されません。</div>
-      </div>
-
-      <div class="field">
-        <label>文字起こし / 内容メモ (任意・手入力も可)</label>
-        <textarea id="researchTranscript" placeholder="セリフや展開のメモ。文字起こし機能を使うと自動で入ります。" style="min-height:100px; font-family:'JetBrains Mono', monospace; font-size:12px;"></textarea>
-      </div>
-      <div class="field">
-        <label>再生数・いいね数など (任意)</label>
-        <input type="text" id="researchStats" placeholder="例: 再生数120万, いいね8万">
-      </div>
-      <button class="gen-btn" id="researchBtn">この動画を分析する</button>
-      <div class="hint">タイトル・文字起こし・統計(あれば)から、バズった要因と自分の企画への応用ポイントをAIが分析します。</div>
+      <div id="researchEntries"></div>
+      <button type="button" class="sub-btn" id="addEntryBtn" style="width:100%; margin-bottom:18px;">+ 動画を追加(最大5本)</button>
+      <button class="gen-btn" id="researchBtn">まとめて分析する(構成の型を抽出)</button>
+      <div class="hint">各動画を個別に分析したうえで、それらに共通する構成の型を抽出し、応用できる新しい構成案を提案します(3〜5本推奨)。</div>
     </div>
   </div>
 
@@ -219,17 +172,11 @@ tabPlan.addEventListener('click', () => {
 tabResearch.addEventListener('click', () => {
   tabResearch.classList.add('active'); tabPlan.classList.remove('active');
   researchPanel.style.display = ''; planPanel.style.display = 'none';
-  resultArea.innerHTML = '<div class="empty">動画URLを入力し情報を取得後、<br>「この動画を分析する」を押してください</div>';
+  resultArea.innerHTML = '<div class="empty">各動画のURLを入力し情報を取得後、<br>「まとめて分析する」を押してください</div>';
 });
 
-// ---- oEmbed fetch ----
-const videoUrlInput = document.getElementById('videoUrl');
-const fetchOembedBtn = document.getElementById('fetchOembedBtn');
-const oembedCard = document.getElementById('oembedCard');
-const oembedThumb = document.getElementById('oembedThumb');
-const oembedTitle = document.getElementById('oembedTitle');
-const oembedAuthor = document.getElementById('oembedAuthor');
-let fetchedOembed = null;
+// ---- Research mode: multiple video entries (3〜5本) ----
+const researchBtn = document.getElementById('researchBtn');
 
 function detectPlatform(url){
   if(/tiktok\.com/i.test(url)) return 'tiktok';
@@ -237,155 +184,290 @@ function detectPlatform(url){
   return null;
 }
 
-const oembedHint = document.getElementById('oembedHint');
-const OEMBED_DEFAULT_HINT = oembedHint.innerHTML;
-const oembedManual = document.getElementById('oembedManual');
-const oembedFallbackToggle = document.getElementById('oembedFallbackToggle');
-const manualTitleInput = document.getElementById('manualTitle');
-const manualAuthorInput = document.getElementById('manualAuthor');
-const useManualOembedBtn = document.getElementById('useManualOembedBtn');
+function entryTemplateHtml(n){
+  return `
+    <div class="video-entry-card">
+      <div class="video-entry-head">
+        <span class="video-entry-num">動画 #${n}</span>
+        <button type="button" class="video-entry-remove re-remove-btn" title="この動画を削除">✕</button>
+      </div>
+      <div class="field">
+        <label>動画URL (TikTok / YouTube)</label>
+        <input type="text" class="re-url" placeholder="https://www.tiktok.com/@.../video/... または https://youtube.com/shorts/...">
+      </div>
+      <button type="button" class="sub-btn re-fetch-oembed-btn" style="margin-bottom:8px;">動画情報を取得</button>
+      <div class="hint re-oembed-hint" style="margin-bottom:8px;">タイトル・投稿者・サムネイルをoEmbedで自動取得します(キー不要)。取得できない場合は下の「手動で入力する」から進められます。</div>
+      <div class="hint re-oembed-fallback-toggle" style="margin-bottom:18px; cursor:pointer; text-decoration:underline;">手動で入力する</div>
 
-oembedFallbackToggle.addEventListener('click', () => {
-  oembedManual.style.display = oembedManual.style.display === 'none' ? '' : 'none';
-});
+      <div class="oembed-card re-oembed-card">
+        <img class="re-oembed-thumb" src="" alt="">
+        <div class="info">
+          <p class="t re-oembed-title"></p>
+          <p class="a re-oembed-author"></p>
+        </div>
+      </div>
 
-useManualOembedBtn.addEventListener('click', () => {
-  const title = manualTitleInput.value.trim();
-  const author = manualAuthorInput.value.trim();
-  if(!title && !author){ alert('タイトルまたは投稿者を入力してください'); return; }
-  fetchedOembed = { title, author, thumbnail: '' };
-  oembedThumb.src = '';
-  oembedThumb.style.display = 'none';
-  oembedTitle.textContent = title;
-  oembedAuthor.textContent = author;
-  oembedCard.style.display = 'flex';
-});
+      <div class="re-oembed-manual" style="display:none; margin-bottom:18px;">
+        <div class="field">
+          <label>タイトル(手動)</label>
+          <input type="text" class="re-manual-title" placeholder="動画のタイトル">
+        </div>
+        <div class="field">
+          <label>投稿者(手動)</label>
+          <input type="text" class="re-manual-author" placeholder="投稿者名">
+        </div>
+        <button type="button" class="sub-btn re-use-manual-btn">この情報を使う</button>
+      </div>
 
-fetchOembedBtn.addEventListener('click', async () => {
-  const url = videoUrlInput.value.trim();
-  if(!url){ alert('動画URLを入力してください'); return; }
-  const platform = detectPlatform(url);
-  if(!platform){ alert('TikTokまたはYouTubeのURLを入力してください'); return; }
+      <div class="field">
+        <label>動画ファイル (任意・自動文字起こし用)</label>
+        <div class="file-drop re-video-drop">
+          クリックして動画を選択(保存済みのもの)
+          <input type="file" class="re-video-input" accept="video/*">
+          <div class="file-name re-video-name"></div>
+        </div>
+      </div>
+      <div class="asr-box">
+        <label>文字起こしモデル</label>
+        <select class="re-asr-model">
+          <option value="Xenova/whisper-tiny">軽量 (速いが精度低め)</option>
+          <option value="Xenova/whisper-base" selected>標準 (バランス型)</option>
+          <option value="Xenova/whisper-small">高精度 (重い・長い動画ではブラウザがクラッシュすることがあります)</option>
+        </select>
+        <div style="height:8px;"></div>
+        <button type="button" class="sub-btn re-transcribe-btn">動画から文字起こしを生成</button>
+        <div class="asr-progress re-asr-progress">処理はすべて端末内で行われ、動画はどこにも送信されません。</div>
+      </div>
 
-  fetchOembedBtn.disabled = true;
-  fetchOembedBtn.textContent = '取得中...';
-  try{
-    const endpoint = platform === 'tiktok'
-      ? `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`
-      : `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
-    const res = await fetch(endpoint);
-    if(!res.ok) throw new Error('oEmbed取得に失敗しました(プライベート動画・削除済み・CORS制限の可能性)');
-    const data = await res.json();
-    oembedHint.innerHTML = OEMBED_DEFAULT_HINT;
-    oembedThumb.style.display = '';
-    fetchedOembed = { title: data.title || '', author: data.author_name || '', thumbnail: data.thumbnail_url || '' };
-    oembedThumb.src = fetchedOembed.thumbnail;
-    oembedTitle.textContent = fetchedOembed.title;
-    oembedAuthor.textContent = fetchedOembed.author;
-    oembedCard.style.display = 'flex';
-  }catch(err){
-    oembedHint.innerHTML = `<span style="color:#ff6b6b;">動画情報の自動取得に失敗しました(${escapeHtml(err.message)})。TikTokはブラウザからの直接アクセスがブロックされる場合があります。</span>`;
-    oembedManual.style.display = '';
-  }finally{
-    fetchOembedBtn.disabled = false;
-    fetchOembedBtn.textContent = '動画情報を取得';
-  }
-});
-
-// ---- Whisper transcription (client-side, reused pattern) ----
-const videoDrop = document.getElementById('videoDrop');
-const videoInput = document.getElementById('videoInput');
-const videoName = document.getElementById('videoName');
-const transcribeBtn = document.getElementById('transcribeBtn');
-const asrProgress = document.getElementById('asrProgress');
-const asrModelSelect = document.getElementById('asrModel');
-const researchTranscript = document.getElementById('researchTranscript');
-const hiddenVideo = document.getElementById('hiddenVideo');
-const ASR_DEFAULT_HINT = asrProgress.textContent;
-
-let videoFile = null;
-
-if (WhisperUtil.isIOS()) {
-  const smallOption = asrModelSelect.querySelector('option[value="Xenova/whisper-small"]');
-  if (smallOption) {
-    smallOption.disabled = true;
-    smallOption.textContent = '高精度 (iOSでは利用不可・メモリ不足でクラッシュします)';
-  }
+      <div class="field">
+        <label>文字起こし / 内容メモ (任意・手入力も可)</label>
+        <textarea class="re-transcript" placeholder="セリフや展開のメモ。文字起こし機能を使うと自動で入ります。" style="min-height:80px; font-family:'JetBrains Mono', monospace; font-size:12px;"></textarea>
+      </div>
+      <div class="field">
+        <label>再生数・いいね数など (任意)</label>
+        <input type="text" class="re-stats" placeholder="例: 再生数120万, いいね8万">
+      </div>
+    </div>
+  `;
 }
 
-videoDrop.addEventListener('click', () => videoInput.click());
+const researchEntriesContainer = document.getElementById('researchEntries');
+const addEntryBtn = document.getElementById('addEntryBtn');
+const MAX_ENTRIES = 5;
+const MIN_ENTRIES = 1;
+let entryCounter = 0;
+const entries = [];
 
-videoInput.addEventListener('change', async () => {
-  videoFile = videoInput.files[0];
-  videoName.textContent = videoFile ? videoFile.name : '';
-  asrProgress.textContent = ASR_DEFAULT_HINT;
-  document.querySelectorAll('#videoDrop .size-warn').forEach(el => el.remove());
-  if(videoFile){
-    const warnings = await WhisperUtil.checkVideoSafety(videoFile);
-    if(warnings.length > 0){
-      const div = document.createElement('div');
-      div.className = 'size-warn';
-      div.innerHTML = '⚠ ' + warnings.map(escapeHtml).join('<br>⚠ ');
-      videoName.after(div);
+function updateAddRemoveState(){
+  addEntryBtn.disabled = entries.length >= MAX_ENTRIES;
+  addEntryBtn.style.opacity = entries.length >= MAX_ENTRIES ? '.5' : '';
+  entries.forEach(en => { en.removeBtn.disabled = entries.length <= MIN_ENTRIES; });
+}
+
+function createEntry(){
+  entryCounter++;
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = entryTemplateHtml(entryCounter);
+  const el = wrapper.firstElementChild;
+  researchEntriesContainer.appendChild(el);
+
+  const urlInput = el.querySelector('.re-url');
+  const fetchBtn = el.querySelector('.re-fetch-oembed-btn');
+  const oembedHintEl = el.querySelector('.re-oembed-hint');
+  const OEMBED_DEFAULT_HINT_LOCAL = oembedHintEl.innerHTML;
+  const fallbackToggle = el.querySelector('.re-oembed-fallback-toggle');
+  const oembedCardEl = el.querySelector('.re-oembed-card');
+  const oembedThumbEl = el.querySelector('.re-oembed-thumb');
+  const oembedTitleEl = el.querySelector('.re-oembed-title');
+  const oembedAuthorEl = el.querySelector('.re-oembed-author');
+  const oembedManualEl = el.querySelector('.re-oembed-manual');
+  const manualTitleEl = el.querySelector('.re-manual-title');
+  const manualAuthorEl = el.querySelector('.re-manual-author');
+  const useManualBtn = el.querySelector('.re-use-manual-btn');
+  const videoDropEl = el.querySelector('.re-video-drop');
+  const videoInputEl = el.querySelector('.re-video-input');
+  const videoNameEl = el.querySelector('.re-video-name');
+  const asrModelEl = el.querySelector('.re-asr-model');
+  const transcribeBtnEl = el.querySelector('.re-transcribe-btn');
+  const asrProgressEl = el.querySelector('.re-asr-progress');
+  const ASR_DEFAULT_HINT_LOCAL = asrProgressEl.textContent;
+  const transcriptEl = el.querySelector('.re-transcript');
+  const statsEl = el.querySelector('.re-stats');
+  const removeBtn = el.querySelector('.re-remove-btn');
+
+  let fetchedOembed = null;
+  let videoFile = null;
+
+  if (WhisperUtil.isIOS()) {
+    const smallOption = asrModelEl.querySelector('option[value="Xenova/whisper-small"]');
+    if (smallOption) {
+      smallOption.disabled = true;
+      smallOption.textContent = '高精度 (iOSでは利用不可・メモリ不足でクラッシュします)';
     }
   }
+
+  fallbackToggle.addEventListener('click', () => {
+    oembedManualEl.style.display = oembedManualEl.style.display === 'none' ? '' : 'none';
+  });
+
+  useManualBtn.addEventListener('click', () => {
+    const title = manualTitleEl.value.trim();
+    const author = manualAuthorEl.value.trim();
+    if(!title && !author){ alert('タイトルまたは投稿者を入力してください'); return; }
+    fetchedOembed = { title, author, thumbnail: '' };
+    oembedThumbEl.src = '';
+    oembedThumbEl.style.display = 'none';
+    oembedTitleEl.textContent = title;
+    oembedAuthorEl.textContent = author;
+    oembedCardEl.style.display = 'flex';
+  });
+
+  fetchBtn.addEventListener('click', async () => {
+    const url = urlInput.value.trim();
+    if(!url){ alert('動画URLを入力してください'); return; }
+    const platform = detectPlatform(url);
+    if(!platform){ alert('TikTokまたはYouTubeのURLを入力してください'); return; }
+
+    fetchBtn.disabled = true;
+    fetchBtn.textContent = '取得中...';
+    try{
+      const endpoint = platform === 'tiktok'
+        ? `https://www.tiktok.com/oembed?url=${encodeURIComponent(url)}`
+        : `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+      const res = await fetch(endpoint);
+      if(!res.ok) throw new Error('oEmbed取得に失敗しました(プライベート動画・削除済み・CORS制限の可能性)');
+      const data = await res.json();
+      oembedHintEl.innerHTML = OEMBED_DEFAULT_HINT_LOCAL;
+      oembedThumbEl.style.display = '';
+      fetchedOembed = { title: data.title || '', author: data.author_name || '', thumbnail: data.thumbnail_url || '' };
+      oembedThumbEl.src = fetchedOembed.thumbnail;
+      oembedTitleEl.textContent = fetchedOembed.title;
+      oembedAuthorEl.textContent = fetchedOembed.author;
+      oembedCardEl.style.display = 'flex';
+    }catch(err){
+      oembedHintEl.innerHTML = `<span style="color:#ff6b6b;">動画情報の自動取得に失敗しました(${escapeHtml(err.message)})。TikTokはブラウザからの直接アクセスがブロックされる場合があります。</span>`;
+      oembedManualEl.style.display = '';
+    }finally{
+      fetchBtn.disabled = false;
+      fetchBtn.textContent = '動画情報を取得';
+    }
+  });
+
+  videoDropEl.addEventListener('click', () => videoInputEl.click());
+
+  videoInputEl.addEventListener('change', async () => {
+    videoFile = videoInputEl.files[0];
+    videoNameEl.textContent = videoFile ? videoFile.name : '';
+    asrProgressEl.textContent = ASR_DEFAULT_HINT_LOCAL;
+    videoDropEl.querySelectorAll('.size-warn').forEach(elx => elx.remove());
+    if(videoFile){
+      const warnings = await WhisperUtil.checkVideoSafety(videoFile);
+      if(warnings.length > 0){
+        const div = document.createElement('div');
+        div.className = 'size-warn';
+        div.innerHTML = '⚠ ' + warnings.map(escapeHtml).join('<br>⚠ ');
+        videoNameEl.after(div);
+      }
+    }
+  });
+
+  transcribeBtnEl.addEventListener('click', async () => {
+    if(!videoFile){ asrProgressEl.textContent = '先に「動画ファイル」を選択してください。'; return; }
+    const modelName = asrModelEl.value;
+
+    const platformBlock = WhisperUtil.getPlatformModelBlock(modelName);
+    if(platformBlock){ alert(platformBlock); return; }
+
+    const switchWarning = WhisperUtil.checkModelSwitchRisk(modelName);
+    if(switchWarning && !confirm(switchWarning)) return;
+
+    try{
+      const duration = await WhisperUtil.getVideoDuration(videoFile);
+      const durationWarning = WhisperUtil.getModelDurationWarning(modelName, duration);
+      if(durationWarning && !confirm(durationWarning)) return;
+    }catch(e){ /* メタデータ取得失敗時は警告をスキップ */ }
+
+    transcribeBtnEl.disabled = true;
+    researchBtn.disabled = true;
+    try{
+      const { lines, rawText, decodedSeconds } = await WhisperUtil.transcribeVideo(videoFile, {
+        modelName,
+        onStatus: (s) => { asrProgressEl.textContent = s; },
+      });
+      const formatted = lines.map(l => `[${WhisperUtil.fmtTime(l.time)}] ${l.text}`);
+      transcriptEl.value = formatted.length ? formatted.join('\n') : rawText;
+      asrProgressEl.textContent = `完了: ${formatted.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください)`;
+    }catch(err){
+      asrProgressEl.textContent = `文字起こしに失敗しました: ${err.message}`;
+    }finally{
+      transcribeBtnEl.disabled = false;
+      researchBtn.disabled = false;
+    }
+  });
+
+  removeBtn.addEventListener('click', () => {
+    if(entries.length <= MIN_ENTRIES) return;
+    const idx = entries.indexOf(entryObj);
+    if(idx !== -1) entries.splice(idx, 1);
+    el.remove();
+    updateAddRemoveState();
+  });
+
+  const entryObj = {
+    el, removeBtn,
+    getData(){
+      const url = urlInput.value.trim();
+      const stats = statsEl.value.trim();
+      const transcript = transcriptEl.value.trim();
+      return {
+        url,
+        title: fetchedOembed ? fetchedOembed.title : '',
+        author: fetchedOembed ? fetchedOembed.author : '',
+        stats,
+        transcript,
+        hasContent: !!(fetchedOembed || transcript),
+      };
+    },
+  };
+  entries.push(entryObj);
+  updateAddRemoveState();
+  return entryObj;
+}
+
+addEntryBtn.addEventListener('click', () => {
+  if(entries.length >= MAX_ENTRIES) return;
+  createEntry();
 });
 
-transcribeBtn.addEventListener('click', async () => {
-  if(!videoFile){ asrProgress.textContent = '先に「動画ファイル」を選択してください。'; return; }
-  const modelName = asrModelSelect.value;
+for(let i = 0; i < 3; i++) createEntry();
 
-  const platformBlock = WhisperUtil.getPlatformModelBlock(modelName);
-  if(platformBlock){ alert(platformBlock); return; }
+// ---- Research analysis: per-video, then cross-video synthesis ----
+const RESEARCH_SCHEMA = {
+  type: "object",
+  properties: {
+    summary: { type: "string" },
+    factors: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { label: { type: "string" }, body: { type: "string" } },
+        required: ["label", "body"],
+        additionalProperties: false
+      }
+    },
+    title_pattern: { type: "string" },
+    takeaways: { type: "string" }
+  },
+  required: ["summary", "factors", "title_pattern", "takeaways"],
+  additionalProperties: false
+};
 
-  const switchWarning = WhisperUtil.checkModelSwitchRisk(modelName);
-  if(switchWarning && !confirm(switchWarning)) return;
-
-  try{
-    const duration = await WhisperUtil.getVideoDuration(videoFile);
-    const durationWarning = WhisperUtil.getModelDurationWarning(modelName, duration);
-    if(durationWarning && !confirm(durationWarning)) return;
-  }catch(e){ /* メタデータ取得失敗時は警告をスキップ */ }
-
-  transcribeBtn.disabled = true;
-  researchBtn.disabled = true;
-  try{
-    const { lines, rawText, decodedSeconds } = await WhisperUtil.transcribeVideo(videoFile, {
-      modelName,
-      onStatus: (s) => { asrProgress.textContent = s; },
-    });
-    const formatted = lines.map(l => `[${WhisperUtil.fmtTime(l.time)}] ${l.text}`);
-    researchTranscript.value = formatted.length ? formatted.join('\n') : rawText;
-    asrProgress.textContent = `完了: ${formatted.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください)`;
-  }catch(err){
-    asrProgress.textContent = `文字起こしに失敗しました: ${err.message}`;
-  }finally{
-    transcribeBtn.disabled = false;
-    researchBtn.disabled = false;
-  }
-});
-
-// ---- Research analysis ----
-const researchBtn = document.getElementById('researchBtn');
-
-researchBtn.addEventListener('click', async () => {
-  const transcript = researchTranscript.value.trim();
-  const stats = document.getElementById('researchStats').value.trim();
-  const url = videoUrlInput.value.trim();
-
-  if(!fetchedOembed && !transcript){
-    resultArea.innerHTML = '<div class="empty err">動画情報を取得するか、文字起こし/内容メモを入力してください。</div>';
-    return;
-  }
-
-  researchBtn.disabled = true;
-  resultArea.innerHTML = '<div class="loading">分析中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
-
+async function analyzeOneVideo({ url, title, author, stats, transcript }){
   const prompt = `あなたはショート動画のバズ分析を専門とする編集プランナーです。以下の情報から、この動画がバズっている(あるいはバズりやすい)要因を分析し、自分の企画・切り抜き制作に応用できる形でまとめてください。
 
 動画URL: ${url || '(不明)'}
-タイトル: ${fetchedOembed ? fetchedOembed.title : '(不明)'}
-投稿者: ${fetchedOembed ? fetchedOembed.author : '(不明)'}
+タイトル: ${title || '(不明)'}
+投稿者: ${author || '(不明)'}
 統計情報: ${stats || '(不明)'}
 文字起こし/内容メモ:
 ${transcript || '(なし・タイトルと投稿者情報のみで分析)'}
@@ -403,35 +485,132 @@ ${transcript || '(なし・タイトルと投稿者情報のみで分析)'}
 
 factorsは3〜5個程度。情報が少ない場合は、わかる範囲で一般的な傾向も交えつつ、憶測であることが分かるように書いてください。`;
 
-  const RESEARCH_SCHEMA = {
-    type: "object",
-    properties: {
-      summary: { type: "string" },
-      factors: {
-        type: "array",
-        items: {
-          type: "object",
-          properties: { label: { type: "string" }, body: { type: "string" } },
-          required: ["label", "body"],
-          additionalProperties: false
-        }
-      },
-      title_pattern: { type: "string" },
-      takeaways: { type: "string" }
-    },
-    required: ["summary", "factors", "title_pattern", "takeaways"],
-    additionalProperties: false
-  };
+  const text = await AnthropicAPI.createMessage({
+    model: "claude-sonnet-5",
+    max_tokens: 3000,
+    messages: [{ role: "user", content: prompt }],
+    output_config: { format: { type: "json_schema", schema: RESEARCH_SCHEMA } }
+  });
+  return AnthropicAPI.parseJson(text);
+}
 
+const SYNTHESIS_SCHEMA = {
+  type: "object",
+  properties: {
+    common_summary: { type: "string" },
+    common_factors: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { label: { type: "string" }, body: { type: "string" } },
+        required: ["label", "body"],
+        additionalProperties: false
+      }
+    },
+    titles: { type: "array", items: { type: "string" } },
+    clips: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          time: { type: "string" },
+          label: { type: "string" },
+          isHook: { type: "boolean" },
+          description: { type: "string" },
+          tags: { type: "array", items: { type: "string" } }
+        },
+        required: ["time", "label", "isHook", "description", "tags"],
+        additionalProperties: false
+      }
+    },
+    tips: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { title: { type: "string" }, body: { type: "string" } },
+        required: ["title", "body"],
+        additionalProperties: false
+      }
+    }
+  },
+  required: ["common_summary", "common_factors", "titles", "clips", "tips"],
+  additionalProperties: false
+};
+
+async function synthesizeCommonPattern(perVideoResults){
+  const videosBlock = perVideoResults.map((v, i) => `
+--- 動画${i + 1} ---
+URL: ${v.url || '(不明)'}
+タイトル: ${v.title || '(不明)'}
+投稿者: ${v.author || '(不明)'}
+統計情報: ${v.stats || '(不明)'}
+[個別分析結果]
+要約: ${v.analysis.summary}
+要因: ${v.analysis.factors.map(f => `${f.label}: ${f.body}`).join(' / ')}
+タイトル/構成の型: ${v.analysis.title_pattern}
+応用ポイント: ${v.analysis.takeaways}
+`).join('\n');
+
+  const prompt = `あなたはショート動画のバズ分析を専門とする編集プランナーです。以下は、${perVideoResults.length}本のバズった(バズりやすい)動画をそれぞれ個別に分析した結果です。
+${videosBlock}
+
+これらの動画に共通する構成の型・パターンを抽出し、それを踏まえた新しい動画の構成案を1つ提案してください。
+
+必ず以下のJSON形式のみで出力してください。前置きや説明、コードブロックの記号は一切付けないでください。
+
+{
+  "common_summary": "${perVideoResults.length}本を通じて共通する構成の型・パターンの総括(2-4文)",
+  "common_factors": [
+    { "label": "共通する要因の見出し", "body": "具体的な説明(複数の動画に共通して見られる根拠を含める)" }
+  ],
+  "titles": ["タイトル案1", "タイトル案2", "タイトル案3", "タイトル案4"],
+  "clips": [
+    {
+      "time": "0:00-0:03",
+      "label": "フック",
+      "isHook": true,
+      "description": "冒頭で視聴者を止めるための具体的なセリフ/展開案",
+      "tags": ["テロップ案", "効果音案"]
+    }
+  ],
+  "tips": [
+    { "title": "サムネのポイント", "body": "具体的な提案" },
+    { "title": "投稿のコツ", "body": "具体的な提案" }
+  ]
+}
+
+common_factorsは3〜5個程度。titles/clips/tipsは「バズる構成AI」の企画モードと同じ形式で、上記の共通パターンを踏まえた新しい構成案として作成してください(想定尺は特に指定が無ければ30〜60秒のショート動画を想定)。clipsは4〜7個程度、時系列順に。`;
+
+  const text = await AnthropicAPI.createMessage({
+    model: "claude-sonnet-5",
+    max_tokens: 5000,
+    messages: [{ role: "user", content: prompt }],
+    output_config: { format: { type: "json_schema", schema: SYNTHESIS_SCHEMA } }
+  });
+  return AnthropicAPI.parseJson(text);
+}
+
+researchBtn.addEventListener('click', async () => {
+  const validEntries = entries.map(e => e.getData()).filter(d => d.hasContent);
+  if(validEntries.length === 0){
+    resultArea.innerHTML = '<div class="empty err">少なくとも1本は、動画情報の取得または文字起こし/内容メモの入力が必要です。</div>';
+    return;
+  }
+
+  researchBtn.disabled = true;
   try{
-    const text = await AnthropicAPI.createMessage({
-      model: "claude-sonnet-5",
-      max_tokens: 3000,
-      messages: [{ role: "user", content: prompt }],
-      output_config: { format: { type: "json_schema", schema: RESEARCH_SCHEMA } }
-    });
-    const result = AnthropicAPI.parseJson(text);
-    renderResearchResult(result);
+    const perVideoResults = [];
+    for(let i = 0; i < validEntries.length; i++){
+      resultArea.innerHTML = `<div class="loading">${i + 1}/${validEntries.length}本目を分析中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>`;
+      const analysis = await analyzeOneVideo(validEntries[i]);
+      perVideoResults.push({ ...validEntries[i], analysis });
+    }
+
+    resultArea.innerHTML = '<div class="loading">共通する構成の型を抽出中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+    const result = await synthesizeCommonPattern(perVideoResults);
+    lastPlanResult = result;
+    renderMultiResearchResult(result, perVideoResults);
+    HistoryStore.save('buzz-structure', { label: `複数動画リサーチ(${validEntries.length}本・共通構成案)`, result });
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">分析に失敗しました: ${escapeHtml(err.message)}</div>`;
   }finally{
@@ -439,25 +618,34 @@ factorsは3〜5個程度。情報が少ない場合は、わかる範囲で一�
   }
 });
 
-function renderResearchResult(result){
-  let html = '';
-  html += '<div class="section-label">// Summary</div>';
-  html += `<div class="analysis-block"><p>${escapeHtml(result.summary||'')}</p></div>`;
-
-  html += '<div class="section-label">// Factors</div>';
-  html += '<div class="factor-list" style="margin-bottom:22px;">';
-  (result.factors||[]).forEach(f => {
-    html += `<div class="factor-item"><p class="f-label">${escapeHtml(f.label||'')}</p><p>${escapeHtml(f.body||'')}</p></div>`;
+function commonPatternHtml(result){
+  let html = '<div class="section-label">// Common Pattern</div>';
+  html += `<div class="analysis-block" style="margin-bottom:22px;"><p>${escapeHtml(result.common_summary || '')}</p></div>`;
+  html += '<div class="factor-list" style="margin-bottom:28px;">';
+  (result.common_factors || []).forEach(f => {
+    html += `<div class="factor-item"><p class="f-label">${escapeHtml(f.label || '')}</p><p>${escapeHtml(f.body || '')}</p></div>`;
   });
   html += '</div>';
+  return html;
+}
 
-  html += '<div class="section-label">// Title Pattern</div>';
-  html += `<div class="analysis-block"><p>${escapeHtml(result.title_pattern||'')}</p></div>`;
+function renderMultiResearchResult(result, perVideoResults){
+  let html = '<div class="section-label">// Analyzed Videos</div>';
+  html += '<div class="factor-list" style="margin-bottom:28px;">';
+  perVideoResults.forEach((v, i) => {
+    html += `<div class="factor-item"><p class="f-label">動画${i + 1}: ${escapeHtml(v.title || v.url || '(タイトル不明)')}</p><p>${escapeHtml(v.analysis.summary || '')}</p></div>`;
+  });
+  html += '</div>';
+  html += commonPatternHtml(result);
+  renderResult(result, html);
+}
 
-  html += '<div class="section-label">// Takeaways</div>';
-  html += `<div class="analysis-block"><p>${escapeHtml(result.takeaways||'')}</p></div>`;
-
-  resultArea.innerHTML = html;
+function renderPlanOrResearchResult(result){
+  if(result && typeof result.common_summary === 'string'){
+    renderResult(result, commonPatternHtml(result));
+  } else {
+    renderResult(result);
+  }
 }
 
 genBtn.addEventListener('click', async () => {
@@ -562,7 +750,7 @@ HistoryUI.init({
   toolKey: 'buzz-structure',
   onRestore: (result) => {
     lastPlanResult = result;
-    renderResult(result);
+    renderPlanOrResearchResult(result);
   },
 });
 
@@ -577,8 +765,8 @@ resultArea.addEventListener('click', (e) => {
   }
 });
 
-function renderResult(result){
-  let html = '';
+function renderResult(result, prefixHtml){
+  let html = prefixHtml || '';
 
   html += '<button type="button" class="sub-btn" id="copyPlanJsonBtn" style="margin-bottom:20px;">この結果をコピー(編集タイムライン統合AI用)</button>';
 
