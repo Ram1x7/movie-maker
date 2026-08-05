@@ -115,21 +115,21 @@
       <div class="hint">構成案(フック・展開などの役割)の情報として使います。上のプルダウンから、バズる構成AIで過去に生成した結果を直接読み込むこともできます(このブラウザに保存されている分のみ)。</div>
     </div>
     <div class="field">
-      <label>切り抜きファインダーAIの結果 (JSON・必須)</label>
+      <label>切り抜きファインダーAIの結果 (JSON・任意)</label>
       <select id="clipsHistoryPicker" style="margin-bottom:8px;"><option value="">履歴から選択...</option></select>
-      <textarea id="clipsJson" placeholder='「切り抜きファインダーAI」の結果画面の「この結果をコピー」ボタンから貼り付けてください'></textarea>
-      <div class="hint">実際の元動画から見つかった、使えそうな箇所(実タイムコード)の情報として使います。<br>※構成案と同じ元動画・同じ企画に基づいた組み合わせを想定しています。上のプルダウンから過去の結果を直接読み込むこともできます。</div>
+      <textarea id="clipsJson" placeholder='「切り抜きファインダーAI」の結果画面の「この結果をコピー」ボタンから貼り付けてください(空欄でも生成できます)'></textarea>
+      <div class="hint">実際の元動画から見つかった、使えそうな箇所(実タイムコード)の情報として使います。<br>※構成案と同じ元動画・同じ企画に基づいた組み合わせを想定しています。上のプルダウンから過去の結果を直接読み込むこともできます。<br>空欄のままでも生成できますが、その場合は構成案自体が持つ目安の時間をそのまま使用します(実際の動画で確認された時刻ではない旨、結果画面に表示されます)。</div>
     </div>
     <div class="field">
       <label>補足メモ (任意)</label>
       <input type="text" id="note" placeholder="例: オチは絶対にこのシーンを使いたい、尺は60秒以内に収めたい など">
     </div>
     <button class="gen-btn" id="genBtn">編集タイムラインを生成する</button>
-    <div class="hint">構成案の各役割(フック・展開・オチなど)に、切り抜き候補の中から最も適した実際のタイムコードを割り当て、CapCut等で編集する際にそのまま見ながら作業できるタイムラインを作成します。</div>
+    <div class="hint">構成案の各役割(フック・展開・オチなど)に、切り抜き候補の中から最も適した実際のタイムコードを割り当て、CapCut等で編集する際にそのまま見ながら作業できるタイムラインを作成します。切り抜き候補が無い場合は、構成案自体の目安時間をもとに作成します。</div>
   </div>
 
   <div class="result-area" id="resultArea">
-    <div class="empty">左に2つのAIの結果(JSON)を貼り付けて<br>「編集タイムラインを生成する」を押してください</div>
+    <div class="empty">左にバズる構成AIの結果(JSON)を貼り付けて<br>「編集タイムラインを生成する」を押してください</div>
   </div>
 </div>
 
@@ -172,39 +172,49 @@ genBtn.addEventListener('click', async () => {
   const clipsRaw = clipsJsonInput.value.trim();
   const note = noteInput.value.trim();
 
-  if(!planRaw || !clipsRaw){
-    resultArea.innerHTML = '<div class="empty err">構成案・切り抜き候補、両方のJSONが必要です。</div>';
+  if(!planRaw){
+    resultArea.innerHTML = '<div class="empty err">バズる構成AIの結果(構成案)のJSONが必要です。</div>';
     return;
   }
 
-  let planData, clipsData;
+  let planData, clipsData = null;
   try{
     planData = JSON.parse(planRaw);
   }catch(e){
     resultArea.innerHTML = '<div class="empty err">「バズる構成AIの結果」がJSONとして読み取れませんでした。「この結果をコピー」ボタンからコピーした内容をそのまま貼り付けてください。</div>';
     return;
   }
-  try{
-    clipsData = JSON.parse(clipsRaw);
-  }catch(e){
-    resultArea.innerHTML = '<div class="empty err">「切り抜きファインダーAIの結果」がJSONとして読み取れませんでした。「この結果をコピー」ボタンからコピーした内容をそのまま貼り付けてください。</div>';
-    return;
+  if(clipsRaw){
+    try{
+      clipsData = JSON.parse(clipsRaw);
+    }catch(e){
+      resultArea.innerHTML = '<div class="empty err">「切り抜きファインダーAIの結果」がJSONとして読み取れませんでした。「この結果をコピー」ボタンからコピーした内容をそのまま貼り付けてください(空欄のままでも生成できます)。</div>';
+      return;
+    }
   }
+  const hasClips = clipsData !== null;
 
   genBtn.disabled = true;
   resultArea.innerHTML = '<div class="loading">編集タイムラインを生成中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
 
-  const prompt = `あなたはショート動画の編集アシスタントです。以下の2つの情報を統合し、CapCut Proなどの動画編集ソフトで実際に手作業編集する際にそのまま見ながら作業できる「編集タイムライン」を1つ作成してください。単に構成を並べるだけでなく、各シーンの重要度・感情・具体的な編集演出(ズーム/カメラ/リアクション)・テロップ・音声の扱いまで、編集者がそのまま手を動かせるレベルで指定してください。
+  const clipsSection = hasClips
+    ? `【切り抜き候補(実際の元動画から見つかった、使えそうな箇所とその実タイムコード)】\n${JSON.stringify(clipsData)}`
+    : `【切り抜き候補】\n(今回は指定されていません。切り抜きファインダーAIの結果がないため、構成案(上記planData)の各clipが持つtime(あくまで構成案上の目安時間)をそのままsource_rangeとして使い、他の情報(重要度・感情・編集演出・テロップ・音声)を付与してください。)`;
+
+  const timecodeInstruction = hasClips
+    ? '- 切り抜き候補(source_range)は必ず切り抜き候補リストに実際に存在する start〜end の範囲から選んでください。存在しない時刻を捏造しないでください。'
+    : '- 切り抜き候補が指定されていないため、構成案の各clipが持つtime(目安の時間)をそのままsource_rangeとして使用してください。これは実際の動画から確認された時刻ではなく、あくまで構成案上の目安である点に注意してください。';
+
+  const prompt = `あなたはショート動画の編集アシスタントです。以下の情報を統合し、CapCut Proなどの動画編集ソフトで実際に手作業編集する際にそのまま見ながら作業できる「編集タイムライン」を1つ作成してください。単に構成を並べるだけでなく、各シーンの重要度・感情・具体的な編集演出(ズーム/カメラ/リアクション)・テロップ・音声の扱いまで、編集者がそのまま手を動かせるレベルで指定してください。
 
 【構成案(狙いたい流れ・各パートの役割)】
 ${JSON.stringify(planData)}
 
-【切り抜き候補(実際の元動画から見つかった、使えそうな箇所とその実タイムコード)】
-${JSON.stringify(clipsData)}
+${clipsSection}
 
 補足メモ: ${note || '(なし)'}
 
-構成案の各パート(フック・展開・オチなど)が担う役割に対して、切り抜き候補の中から最も適した実際のタイムコード範囲を割り当て、時系列順に並べた編集タイムラインを作成してください。
+構成案の各パート(フック・展開・オチなど)が担う役割に対して、${hasClips ? '切り抜き候補の中から最も適した実際のタイムコード範囲を割り当て、' : ''}時系列順に並べた編集タイムラインを作成してください。
 
 各シーンについて、以下も判断して付与してください:
 - importance: 5=絶対使う, 4=強く推奨, 3=できれば使用, 2=尺が無ければ削除, 1=予備 の5段階
@@ -214,7 +224,7 @@ ${JSON.stringify(clipsData)}
 - audio: ゲーム音の扱い(gameAudio。例: keep, mute, 下げる など自由記述)、BGM音量(bgm: off/low/medium/high)、リアクション音声の扱い(reaction。自由記述)、追加する効果音の擬音(addSEの配列。無ければ空配列)
 
 注意点:
-- 切り抜き候補(source_range)は必ず切り抜き候補リストに実際に存在する start〜end の範囲から選んでください。存在しない時刻を捏造しないでください。
+${timecodeInstruction}
 - 構成案のある役割に対して、切り抜き候補の中に適切な箇所がどうしても見当たらない場合は、無理に割り当てず、overall_note にその旨を明記してください(例: 「オチに該当する箇所なし。テロップのみで繋ぐことを検討」)。
 - 明確な意図がない限り、同じ切り抜き候補を複数の役割に重複して使わないでください。
 - telop・sfxには、構成案側のtagsや切り抜き候補側のtags/reasonも参考にしつつ、その箇所に最適な具体案を書いてください(captionのtextと重複しても構いません)。
@@ -318,7 +328,7 @@ ${JSON.stringify(clipsData)}
       metaErrorMsg = metaErr.message;
     }
 
-    const result = Object.assign({}, timelineResult, metaResult || {});
+    const result = Object.assign({}, timelineResult, metaResult || {}, { used_clip_finder: hasClips });
     lastTimelineResult = result;
     renderResult(result, metaErrorMsg);
     HistoryStore.save('edit-timeline', { label: note || 'タイムライン', result });
@@ -571,7 +581,11 @@ const TEMPO_PHASE_CLASS = { Hook: 'hook', Calm: 'calm', Reaction: 'reaction', Pe
 function renderResult(result, metaErrorMsg){
   const timeline = (result.timeline || []).slice().sort((a,b) => (a.order||0) - (b.order||0));
 
-  let html = '<div class="section-label">// Edit Timeline</div>';
+  let html = '';
+  if(result.used_clip_finder === false){
+    html += `<div class="overall-note" style="border-color:var(--gold);color:var(--gold);margin-bottom:22px;">⚠ 切り抜きファインダーAIの結果が指定されていないため、実際の動画から確認された時刻ではなく、構成案自体が持つ目安の時間をタイムコードとして使用しています。編集前に実際の動画で位置を確認してください。</div>`;
+  }
+  html += '<div class="section-label">// Edit Timeline</div>';
 
   if(timeline.length === 0){
     html += '<div class="empty">タイムラインを生成できませんでした。</div>';
