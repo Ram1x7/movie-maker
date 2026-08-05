@@ -153,6 +153,7 @@
 <script src="shared/nav.js"></script>
 <script src="shared/api-client.js"></script>
 <script src="shared/history.js"></script>
+<script src="shared/favorites.js"></script>
 <script src="shared/whisper.js"></script>
 <script>
 const genBtn = document.getElementById('genBtn');
@@ -754,6 +755,14 @@ HistoryUI.init({
   },
 });
 
+FavoritesUI.init({
+  toolKey: 'buzz-structure',
+  onRestore: (result) => {
+    lastPlanResult = result;
+    renderPlanOrResearchResult(result);
+  },
+});
+
 resultArea.addEventListener('click', (e) => {
   if(e.target && e.target.id === 'copyPlanJsonBtn' && lastPlanResult){
     navigator.clipboard.writeText(JSON.stringify(lastPlanResult)).then(() => {
@@ -763,11 +772,20 @@ resultArea.addEventListener('click', (e) => {
       e.target.textContent = 'コピーに失敗しました';
     });
   }
+  if(e.target && e.target.id === 'saveFavoriteBtn' && lastPlanResult){
+    const suggested = (lastPlanResult.titles && lastPlanResult.titles[0]) || '';
+    const label = prompt('この構成案に任意でタイトル/メモを付けられます(空欄でも保存できます)', suggested);
+    if(label === null) return;
+    FavoritesStore.save('buzz-structure', { label: label.trim(), result: lastPlanResult });
+    e.target.textContent = '保存しました';
+    setTimeout(() => { e.target.textContent = '⭐ お気に入り保存'; }, 2000);
+  }
 });
 
 function renderResult(result, prefixHtml){
   let html = prefixHtml || '';
 
+  html += '<button type="button" class="sub-btn" id="saveFavoriteBtn" style="margin-bottom:12px;">⭐ お気に入り保存</button>';
   html += '<button type="button" class="sub-btn" id="copyPlanJsonBtn" style="margin-bottom:20px;">この結果をコピー(編集タイムライン統合AI用)</button>';
 
   html += '<div class="section-label">// Title Ideas</div>';
