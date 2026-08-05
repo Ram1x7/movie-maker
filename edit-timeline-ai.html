@@ -33,6 +33,69 @@
   .tl-tags{ display:flex; gap:6px; flex-wrap:wrap; }
   .tl-tags span{ font-size:10.5px; color:var(--accent); background:var(--accent-dim); padding:3px 8px; border-radius:4px; font-family:'JetBrains Mono', monospace; }
   .tl-tags span.sfx{ color:var(--gold); background:var(--gold-dim); }
+
+  /* --- Editing-assistant enrichment (additive; existing tl-* rules above are untouched) --- */
+  .tl-badges{ display:flex; gap:6px; flex-wrap:wrap; margin:8px 0 0; }
+  .tl-badge{ font-size:10px; font-family:'JetBrains Mono', monospace; padding:3px 8px; border-radius:4px; }
+  .tl-badge.importance{ border:1px solid var(--accent); color:var(--accent); }
+  .tl-badge.importance.imp-5{ background:var(--accent); color:#14161a; font-weight:700; }
+  .tl-badge.emotion{ background:var(--cyan-dim); color:var(--cyan); }
+  .tl-badge.editing{ background:var(--panel2); color:var(--sub); border:1px solid var(--line); }
+  .tl-caption-box{ margin-top:8px; padding:8px 10px; border-radius:6px; background:var(--panel2); border-left:3px solid var(--gold); }
+  .tl-caption-box .cap-text{ font-size:12.5px; font-weight:700; margin:0 0 3px; }
+  .tl-caption-box .cap-meta{ font-size:10px; color:var(--sub); font-family:'JetBrains Mono', monospace; }
+  .tl-audio-row{ font-size:10.5px; color:var(--sub); font-family:'JetBrains Mono', monospace; margin-top:6px; }
+  .tl-audio-row b{ color:var(--text); }
+
+  .toggle-btn{ background:none; border:1px solid var(--line); color:var(--sub); padding:8px 14px; border-radius:6px; font-size:12px; cursor:pointer; font-family:'Space Grotesk', sans-serif; font-weight:700; margin:0 8px 20px 0; }
+  .toggle-btn:hover{ color:var(--text); border-color:var(--accent); }
+  .toggle-btn.active{ color:var(--accent); border-color:var(--accent); }
+  .action-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; }
+
+  .instruction-sheet{ background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:16px 18px; margin-bottom:24px; font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.9; color:#c7c5c1; white-space:pre-wrap; }
+  .instruction-sheet b{ color:var(--accent); }
+
+  .tempo-bar{ display:flex; border-radius:6px; overflow:hidden; margin-bottom:10px; height:32px; }
+  .tempo-phase{ display:flex; align-items:center; justify-content:center; font-size:10.5px; font-family:'JetBrains Mono', monospace; color:#14161a; flex-shrink:0; min-width:40px; }
+  .tempo-phase.hook{ background:var(--accent); }
+  .tempo-phase.calm{ background:var(--cyan); }
+  .tempo-phase.reaction{ background:var(--gold); }
+  .tempo-phase.peak{ background:#ff4d6d; }
+  .tempo-phase.ending{ background:#8b8d97; }
+  .tempo-phase-label{ font-size:10px; color:var(--sub); font-family:'JetBrains Mono', monospace; margin-bottom:16px; }
+  .slow-point{ background:var(--panel); border:1px solid #ff4d6d55; border-radius:8px; padding:10px 14px; margin-bottom:10px; }
+  .slow-point .sp-range{ font-family:'JetBrains Mono', monospace; font-size:11.5px; color:#ff4d6d; font-weight:700; }
+  .slow-point .sp-issue{ font-size:12.5px; margin:4px 0; }
+  .slow-point .sp-suggestions{ font-size:11.5px; color:var(--sub); }
+
+  .tips-list{ list-style:none; padding:0; margin:0 0 24px; }
+  .tips-list li{ font-size:13px; color:#c7c5c1; line-height:1.7; padding:8px 0 8px 20px; position:relative; border-bottom:1px solid var(--line); }
+  .tips-list li:last-child{ border-bottom:none; }
+  .tips-list li::before{ content:'・'; position:absolute; left:0; color:var(--accent); }
+
+  .eval-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px,1fr)); gap:10px; margin-bottom:12px; }
+  .eval-item{ background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:10px 12px; text-align:center; }
+  .eval-item .e-label{ font-size:11px; color:var(--sub); margin-bottom:4px; }
+  .eval-item .e-score{ font-family:'Space Grotesk', sans-serif; font-size:18px; font-weight:700; color:var(--accent); }
+  .eval-total{ text-align:center; padding:16px; background:var(--accent-dim); border-radius:8px; margin-bottom:24px; }
+  .eval-total .e-total-num{ font-family:'Space Grotesk', sans-serif; font-size:32px; font-weight:700; color:var(--accent); }
+  .eval-total .e-total-label{ font-size:11px; color:var(--sub); margin-top:4px; }
+
+  .post-card{ background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px 16px; margin-bottom:12px; }
+  .post-card .p-label{ font-size:10.5px; color:var(--sub); font-family:'JetBrains Mono', monospace; text-transform:uppercase; letter-spacing:.06em; margin-bottom:6px; }
+  .post-card .p-value{ font-size:13.5px; line-height:1.6; margin:0 0 8px; }
+  .post-card .p-copy{ background:none; border:1px solid var(--cyan); color:var(--cyan); padding:5px 10px; border-radius:5px; font-size:11px; cursor:pointer; font-family:'Space Grotesk', sans-serif; }
+  .post-hashtags{ display:flex; flex-wrap:wrap; gap:6px; }
+  .post-hashtags span{ font-size:11.5px; color:var(--cyan); background:var(--cyan-dim); padding:4px 10px; border-radius:14px; }
+
+  .duration-variant-area{ margin-top:8px; }
+  .dv-card{ background:var(--panel); border:1px solid var(--accent); border-radius:8px; padding:14px 16px; margin-bottom:24px; }
+  .dv-card h4{ margin:0 0 4px; font-size:13px; color:var(--accent); font-family:'Space Grotesk', sans-serif; }
+  .dv-card .dv-meta{ font-size:11px; color:var(--sub); margin-bottom:10px; font-family:'JetBrains Mono', monospace; }
+  .dv-row{ display:flex; justify-content:space-between; gap:10px; font-size:12.5px; padding:6px 0; border-bottom:1px solid var(--line); }
+  .dv-row:last-child{ border-bottom:none; }
+  .dv-row .dv-role{ font-weight:700; }
+  .dv-row .dv-range{ font-family:'JetBrains Mono', monospace; color:var(--sub); font-size:11px; }
 </style>
 </head>
 <body>
@@ -129,9 +192,9 @@ genBtn.addEventListener('click', async () => {
   }
 
   genBtn.disabled = true;
-  resultArea.innerHTML = '<div class="loading">統合中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+  resultArea.innerHTML = '<div class="loading">編集タイムラインを生成中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
 
-  const prompt = `あなたはショート動画の編集アシスタントです。以下の2つの情報を統合し、CapCut Proなどの動画編集ソフトで実際に手作業編集する際にそのまま見ながら作業できる「編集タイムライン」を1つ作成してください。
+  const prompt = `あなたはショート動画の編集アシスタントです。以下の2つの情報を統合し、CapCut Proなどの動画編集ソフトで実際に手作業編集する際にそのまま見ながら作業できる「編集タイムライン」を1つ作成してください。単に構成を並べるだけでなく、各シーンの重要度・感情・具体的な編集演出(ズーム/カメラ/リアクション)・テロップ・音声の扱いまで、編集者がそのまま手を動かせるレベルで指定してください。
 
 【構成案(狙いたい流れ・各パートの役割)】
 ${JSON.stringify(planData)}
@@ -143,11 +206,18 @@ ${JSON.stringify(clipsData)}
 
 構成案の各パート(フック・展開・オチなど)が担う役割に対して、切り抜き候補の中から最も適した実際のタイムコード範囲を割り当て、時系列順に並べた編集タイムラインを作成してください。
 
+各シーンについて、以下も判断して付与してください:
+- importance: 5=絶対使う, 4=強く推奨, 3=できれば使用, 2=尺が無ければ削除, 1=予備 の5段階
+- emotion: そのシーンの感情(例: 驚き, 爆笑, 緊張, 成功, 失敗, 可愛い, 感動, 焦り, 困惑。当てはまるものが無ければ他の言葉でも可)
+- editing: zoom(none/110%/120%/face), camera(normal/shake/punch), reaction(small/medium/large)
+- caption: そのシーンのテロップ文言(text)と、表示位置(position: top/bottom/center)・スタイル(style: normal/impact/small)・色(color: white/yellow/red/orange)・アニメーション(animation: pop/slide/none)
+- audio: ゲーム音の扱い(gameAudio。例: keep, mute, 下げる など自由記述)、BGM音量(bgm: off/low/medium/high)、リアクション音声の扱い(reaction。自由記述)、追加する効果音の擬音(addSEの配列。無ければ空配列)
+
 注意点:
 - 切り抜き候補(source_range)は必ず切り抜き候補リストに実際に存在する start〜end の範囲から選んでください。存在しない時刻を捏造しないでください。
 - 構成案のある役割に対して、切り抜き候補の中に適切な箇所がどうしても見当たらない場合は、無理に割り当てず、overall_note にその旨を明記してください(例: 「オチに該当する箇所なし。テロップのみで繋ぐことを検討」)。
 - 明確な意図がない限り、同じ切り抜き候補を複数の役割に重複して使わないでください。
-- telop・sfxには、構成案側のtagsや切り抜き候補側のtags/reasonも参考にしつつ、その箇所に最適な具体案を書いてください。
+- telop・sfxには、構成案側のtagsや切り抜き候補側のtags/reasonも参考にしつつ、その箇所に最適な具体案を書いてください(captionのtextと重複しても構いません)。
 
 必ず以下のJSON形式のみで出力してください。前置き、説明、コードブロック記号は一切付けないでください。
 
@@ -159,7 +229,12 @@ ${JSON.stringify(clipsData)}
       "source_range": "0:12-0:20",
       "reason": "この箇所をこの役割に割り当てた理由",
       "telop": "テロップ案",
-      "sfx": "効果音/BGM案"
+      "sfx": "効果音/BGM案",
+      "importance": 5,
+      "emotion": "驚き",
+      "editing": { "zoom": "120%", "camera": "shake", "reaction": "medium" },
+      "caption": { "text": "えっ、それマジ!?", "position": "top", "style": "impact", "color": "yellow", "animation": "pop" },
+      "audio": { "gameAudio": "keep", "bgm": "off", "reaction": "keep", "addSE": ["ズッ", "ポン"] }
     }
   ],
   "overall_note": "全体を通しての補足(尺のバランス、役割に対して適切な候補が無かった箇所など)"
@@ -178,9 +253,44 @@ ${JSON.stringify(clipsData)}
             source_range: { type: "string" },
             reason: { type: "string" },
             telop: { type: "string" },
-            sfx: { type: "string" }
+            sfx: { type: "string" },
+            importance: { type: "integer", enum: [1, 2, 3, 4, 5] },
+            emotion: { type: "string" },
+            editing: {
+              type: "object",
+              properties: {
+                zoom: { type: "string", enum: ["none", "110%", "120%", "face"] },
+                camera: { type: "string", enum: ["normal", "shake", "punch"] },
+                reaction: { type: "string", enum: ["small", "medium", "large"] }
+              },
+              required: ["zoom", "camera", "reaction"],
+              additionalProperties: false
+            },
+            caption: {
+              type: "object",
+              properties: {
+                text: { type: "string" },
+                position: { type: "string", enum: ["top", "bottom", "center"] },
+                style: { type: "string", enum: ["normal", "impact", "small"] },
+                color: { type: "string", enum: ["white", "yellow", "red", "orange"] },
+                animation: { type: "string", enum: ["pop", "slide", "none"] }
+              },
+              required: ["text", "position", "style", "color", "animation"],
+              additionalProperties: false
+            },
+            audio: {
+              type: "object",
+              properties: {
+                gameAudio: { type: "string" },
+                bgm: { type: "string", enum: ["off", "low", "medium", "high"] },
+                reaction: { type: "string" },
+                addSE: { type: "array", items: { type: "string" } }
+              },
+              required: ["gameAudio", "bgm", "reaction", "addSE"],
+              additionalProperties: false
+            }
           },
-          required: ["order", "role", "source_range", "reason", "telop", "sfx"],
+          required: ["order", "role", "source_range", "reason", "telop", "sfx", "importance", "emotion", "editing", "caption", "audio"],
           additionalProperties: false
         }
       },
@@ -193,12 +303,24 @@ ${JSON.stringify(clipsData)}
   try{
     const text = await AnthropicAPI.createMessage({
       model: "claude-sonnet-5",
-      max_tokens: 4000,
+      max_tokens: 6000,
       messages: [{ role: "user", content: prompt }],
       output_config: { format: { type: "json_schema", schema: TIMELINE_SCHEMA } }
     });
-    const result = AnthropicAPI.parseJson(text);
-    renderResult(result);
+    const timelineResult = AnthropicAPI.parseJson(text);
+
+    let metaResult = null;
+    let metaErrorMsg = '';
+    resultArea.innerHTML = '<div class="loading">テンポ分析・評価・投稿文言を生成中<span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
+    try{
+      metaResult = await analyzeVideoMeta(timelineResult.timeline || [], planData, note);
+    }catch(metaErr){
+      metaErrorMsg = metaErr.message;
+    }
+
+    const result = Object.assign({}, timelineResult, metaResult || {});
+    lastTimelineResult = result;
+    renderResult(result, metaErrorMsg);
     HistoryStore.save('edit-timeline', { label: note || 'タイムライン', result });
   }catch(err){
     resultArea.innerHTML = `<div class="empty err">生成に失敗しました: ${escapeHtml(err.message)}</div>`;
@@ -207,14 +329,246 @@ ${JSON.stringify(clipsData)}
   }
 });
 
+async function analyzeVideoMeta(timeline, planData, note){
+  const prompt = `あなたはショート動画の編集ディレクターです。以下は、これから編集する動画の確定した編集タイムラインです。この内容をもとに、動画全体のテンポ分析・編集者向けアドバイス・完成度の採点・投稿用の文言・編集時間短縮のポイントをまとめてください。
+
+【確定した編集タイムライン】
+${JSON.stringify(timeline)}
+
+【元になった構成案】
+${JSON.stringify(planData)}
+
+補足メモ: ${note || '(なし)'}
+
+以下を作成してください:
+1. tempo_analysis: 動画全体をHook(掴み)/Calm(落ち着き)/Reaction(リアクション)/Peak(盛り上がり)/Ending(締め)の5種類のフェーズに区分し(phases)、テンポが落ちている(間延びしている)可能性のある箇所があれば具体的な時間範囲・問題点・改善提案とともに指摘してください(slow_points。無ければ空配列でよい)。
+2. editor_tips: 編集者がそのまま実行できる具体的なアドバイスを3〜6個。
+3. evaluation: 完成した構成を8項目それぞれ0〜10点で採点(hook, tempo, ending, reaction, retention, title, comment_guidance, series)。
+4. post_assist: YouTube Shorts用タイトル(youtube_title)、TikTok用タイトル(tiktok_title)、概要欄(description)、検索向けハッシュタグ(hashtags。#なしの単語配列で5〜8個)、コメント固定文案(pinned_comment)。
+5. time_saving_tips: 編集時間を短縮するための具体的なポイントを3〜5個(例: 「このシーンはズーム不要」「SE追加は3か所のみ」など)。
+
+必ず以下のJSON形式のみで出力してください。前置き、説明、コードブロック記号は一切付けないでください。
+
+{
+  "tempo_analysis": {
+    "phases": [ { "range": "0:00-0:05", "phase": "Hook" } ],
+    "slow_points": [ { "range": "0:23-0:27", "issue": "テンポ低下", "suggestions": ["0.7秒短縮", "リアクション追加"] } ]
+  },
+  "editor_tips": ["ゲーム音を優先してください"],
+  "evaluation": { "hook": 8, "tempo": 7, "ending": 6, "reaction": 8, "retention": 7, "title": 8, "comment_guidance": 6, "series": 7 },
+  "post_assist": {
+    "youtube_title": "YouTube Shorts用タイトル案",
+    "tiktok_title": "TikTok用タイトル案",
+    "description": "概要欄用の文章",
+    "hashtags": ["ショート動画", "切り抜き"],
+    "pinned_comment": "コメント固定文案"
+  },
+  "time_saving_tips": ["このシーンはズーム不要"]
+}`;
+
+  const META_SCHEMA = {
+    type: "object",
+    properties: {
+      tempo_analysis: {
+        type: "object",
+        properties: {
+          phases: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                range: { type: "string" },
+                phase: { type: "string", enum: ["Hook", "Calm", "Reaction", "Peak", "Ending"] }
+              },
+              required: ["range", "phase"],
+              additionalProperties: false
+            }
+          },
+          slow_points: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                range: { type: "string" },
+                issue: { type: "string" },
+                suggestions: { type: "array", items: { type: "string" } }
+              },
+              required: ["range", "issue", "suggestions"],
+              additionalProperties: false
+            }
+          }
+        },
+        required: ["phases", "slow_points"],
+        additionalProperties: false
+      },
+      editor_tips: { type: "array", items: { type: "string" } },
+      evaluation: {
+        type: "object",
+        properties: {
+          hook: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] },
+          tempo: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] },
+          ending: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] },
+          reaction: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] },
+          retention: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] },
+          title: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] },
+          comment_guidance: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] },
+          series: { type: "integer", enum: [0,1,2,3,4,5,6,7,8,9,10] }
+        },
+        required: ["hook", "tempo", "ending", "reaction", "retention", "title", "comment_guidance", "series"],
+        additionalProperties: false
+      },
+      post_assist: {
+        type: "object",
+        properties: {
+          youtube_title: { type: "string" },
+          tiktok_title: { type: "string" },
+          description: { type: "string" },
+          hashtags: { type: "array", items: { type: "string" } },
+          pinned_comment: { type: "string" }
+        },
+        required: ["youtube_title", "tiktok_title", "description", "hashtags", "pinned_comment"],
+        additionalProperties: false
+      },
+      time_saving_tips: { type: "array", items: { type: "string" } }
+    },
+    required: ["tempo_analysis", "editor_tips", "evaluation", "post_assist", "time_saving_tips"],
+    additionalProperties: false
+  };
+
+  const text = await AnthropicAPI.createMessage({
+    model: "claude-sonnet-5",
+    max_tokens: 3500,
+    messages: [{ role: "user", content: prompt }],
+    output_config: { format: { type: "json_schema", schema: META_SCHEMA } }
+  });
+  return AnthropicAPI.parseJson(text);
+}
+
+let lastTimelineResult = null;
+
 HistoryUI.init({
   toolKey: 'edit-timeline',
   onRestore: (result) => {
+    lastTimelineResult = result;
     renderResult(result);
   },
 });
 
-function renderResult(result){
+// ---- time / duration helpers (used by the 尺調整 feature) ----
+function parseTimeStrToSeconds(str){
+  const parts = String(str).trim().split(':').map(s => parseFloat(s));
+  if(parts.length === 0 || parts.some(isNaN)) return null;
+  if(parts.length === 3) return parts[0]*3600 + parts[1]*60 + parts[2];
+  if(parts.length === 2) return parts[0]*60 + parts[1];
+  return parts[0];
+}
+function rangeDurationSeconds(rangeStr){
+  if(!rangeStr) return 0;
+  const parts = String(rangeStr).split('-').map(s => s.trim());
+  if(parts.length !== 2) return 0;
+  const start = parseTimeStrToSeconds(parts[0]);
+  const end = parseTimeStrToSeconds(parts[1]);
+  if(start === null || end === null || end < start) return 0;
+  return end - start;
+}
+function fmtDurationSeconds(s){
+  s = Math.max(0, Math.round(s));
+  const m = Math.floor(s/60), sec = s%60;
+  return `${m}:${String(sec).padStart(2,'0')}`;
+}
+
+// Client-side, deterministic trimming: no extra API call needed since the
+// enriched timeline already carries importance + real timecodes. Removes the
+// lowest-importance (and, among ties, longest) scenes first until the total
+// estimated duration fits the target, always keeping at least one scene.
+function trimTimelineToDuration(timeline, targetSeconds){
+  const items = timeline.map(t => ({ item: t, dur: rangeDurationSeconds(t.source_range) }));
+  let totalDur = items.reduce((s, x) => s + x.dur, 0);
+  if(items.length <= 1 || totalDur <= targetSeconds){
+    return { items: timeline, totalDur };
+  }
+  const candidates = items.slice().sort((a, b) => {
+    const ai = a.item.importance ?? 3, bi = b.item.importance ?? 3;
+    if(ai !== bi) return ai - bi;
+    return b.dur - a.dur;
+  });
+  const removed = new Set();
+  for(const c of candidates){
+    if(totalDur <= targetSeconds) break;
+    if(items.length - removed.size <= 1) break;
+    removed.add(c.item.order);
+    totalDur -= c.dur;
+  }
+  const kept = items.filter(x => !removed.has(x.item.order)).map(x => x.item);
+  return { items: kept, totalDur };
+}
+
+function renderDurationVariant(targetSeconds, items, totalDur){
+  const sorted = items.slice().sort((a,b) => (a.order||0) - (b.order||0));
+  let html = `<div class="dv-card">
+    <h4>${targetSeconds}秒版(重要度をもとに自動調整)</h4>
+    <div class="dv-meta">シーン数: ${sorted.length} / 合計尺の目安: ${fmtDurationSeconds(totalDur)}(目標 ${fmtDurationSeconds(targetSeconds)})</div>`;
+  sorted.forEach(t => {
+    html += `<div class="dv-row">
+      <span class="dv-role">${escapeHtml(t.role || '')}${t.importance ? ` <span style="color:var(--sub);font-weight:400;">(重要度${escapeHtml(t.importance)})</span>` : ''}</span>
+      <span class="dv-range">${escapeHtml(t.source_range || '')}</span>
+    </div>`;
+  });
+  html += '</div>';
+  document.getElementById('durationVariantArea').innerHTML = html;
+}
+
+// ---- 編集指示書(instruction sheet) formatting ----
+function bgmAudioLabel(v){
+  const map = { off: 'BGMなし', low: 'BGM: 小', medium: 'BGM: 中', high: 'BGM: 大' };
+  if(map[v]) return map[v];
+  return v ? `BGM: ${v}` : '';
+}
+function zoomLabel(v){
+  if(!v || v === 'none') return null;
+  return v === 'face' ? 'ズーム: 顔アップ' : `ズーム${v}`;
+}
+function cameraLabel(v){
+  if(!v || v === 'normal') return null;
+  const map = { shake: 'カメラ: 揺れ', punch: 'カメラ: パンチイン' };
+  return map[v] || `カメラ: ${v}`;
+}
+
+function instructionLinesForItem(t){
+  const lines = [];
+  if(t.role) lines.push(t.role);
+  if(t.emotion) lines.push(`感情: ${t.emotion}`);
+  if(t.audio){
+    if(t.audio.gameAudio) lines.push(`ゲーム音: ${t.audio.gameAudio}`);
+    const bl = bgmAudioLabel(t.audio.bgm); if(bl) lines.push(bl);
+    if(t.audio.reaction) lines.push(`リアクション音声: ${t.audio.reaction}`);
+    if(t.audio.addSE && t.audio.addSE.length) lines.push(`追加SE: ${t.audio.addSE.join(' / ')}`);
+  }
+  if(t.caption && t.caption.text){
+    lines.push(`テロップ: 「${t.caption.text}」(${t.caption.position}/${t.caption.style}/${t.caption.color}/${t.caption.animation})`);
+  } else if(t.telop){
+    lines.push(`テロップ: ${t.telop}`);
+  }
+  if(t.editing){
+    const zl = zoomLabel(t.editing.zoom); if(zl) lines.push(zl);
+    const cl = cameraLabel(t.editing.camera); if(cl) lines.push(cl);
+    if(t.editing.reaction) lines.push(`リアクション: ${t.editing.reaction}`);
+  }
+  if(t.sfx) lines.push(`SE/BGM補足: ${t.sfx}`);
+  if(t.importance) lines.push(`重要度: ${t.importance}`);
+  return lines;
+}
+
+function renderInstructionSheet(timeline){
+  return timeline.map(t => {
+    const lines = instructionLinesForItem(t);
+    return `<b>${escapeHtml(t.source_range || '')}</b>\n` + lines.map(l => `・${escapeHtml(l)}`).join('\n');
+  }).join('\n\n');
+}
+
+const TEMPO_PHASE_CLASS = { Hook: 'hook', Calm: 'calm', Reaction: 'reaction', Peak: 'peak', Ending: 'ending' };
+
+function renderResult(result, metaErrorMsg){
   const timeline = (result.timeline || []).slice().sort((a,b) => (a.order||0) - (b.order||0));
 
   let html = '<div class="section-label">// Edit Timeline</div>';
@@ -223,6 +577,15 @@ function renderResult(result){
     html += '<div class="empty">タイムラインを生成できませんでした。</div>';
   } else {
     timeline.forEach(t => {
+      const badges = [];
+      if(t.importance) badges.push(`<span class="tl-badge importance imp-${escapeHtml(t.importance)}">重要度 ${escapeHtml(t.importance)}</span>`);
+      if(t.emotion) badges.push(`<span class="tl-badge emotion">${escapeHtml(t.emotion)}</span>`);
+      if(t.editing){
+        if(t.editing.zoom && t.editing.zoom !== 'none') badges.push(`<span class="tl-badge editing">🔍 ${escapeHtml(t.editing.zoom === 'face' ? '顔アップ' : t.editing.zoom)}</span>`);
+        if(t.editing.camera && t.editing.camera !== 'normal') badges.push(`<span class="tl-badge editing">🎥 ${escapeHtml(t.editing.camera)}</span>`);
+        if(t.editing.reaction) badges.push(`<span class="tl-badge editing">😲 ${escapeHtml(t.editing.reaction)}</span>`);
+      }
+
       html += `<div class="tl-row">
         <div class="tl-order">${escapeHtml(t.order ?? '')}</div>
         <div class="tl-card">
@@ -235,9 +598,98 @@ function renderResult(result){
             ${t.telop ? `<span>テロップ: ${escapeHtml(t.telop)}</span>` : ''}
             ${t.sfx ? `<span class="sfx">SE/BGM: ${escapeHtml(t.sfx)}</span>` : ''}
           </div>
+          ${badges.length ? `<div class="tl-badges">${badges.join('')}</div>` : ''}
+          ${t.caption && t.caption.text ? `<div class="tl-caption-box">
+            <p class="cap-text">${escapeHtml(t.caption.text)}</p>
+            <span class="cap-meta">${escapeHtml(t.caption.position)} / ${escapeHtml(t.caption.style)} / ${escapeHtml(t.caption.color)} / ${escapeHtml(t.caption.animation)}</span>
+          </div>` : ''}
+          ${t.audio ? `<div class="tl-audio-row">
+            ${t.audio.gameAudio ? `<b>ゲーム音</b>: ${escapeHtml(t.audio.gameAudio)} / ` : ''}${bgmAudioLabel(t.audio.bgm)}${t.audio.reaction ? ` / <b>リアクション音声</b>: ${escapeHtml(t.audio.reaction)}` : ''}${(t.audio.addSE && t.audio.addSE.length) ? ` / <b>追加SE</b>: ${escapeHtml(t.audio.addSE.join(' / '))}` : ''}
+          </div>` : ''}
         </div>
       </div>`;
     });
+
+    html += `<div class="action-row">
+      <button type="button" class="toggle-btn" id="toggleInstructionBtn">📋 編集指示書を表示</button>
+      <button type="button" class="toggle-btn dv-trigger" data-seconds="30">⏱ 30秒版を生成</button>
+      <button type="button" class="toggle-btn dv-trigger" data-seconds="45">⏱ 45秒版を生成</button>
+      <button type="button" class="toggle-btn dv-trigger" data-seconds="60">⏱ 60秒版を生成</button>
+    </div>
+    <div class="instruction-sheet" id="instructionSheetArea" style="display:none;">${renderInstructionSheet(timeline)}</div>
+    <div class="duration-variant-area" id="durationVariantArea"></div>`;
+  }
+
+  if(metaErrorMsg){
+    html += `<div class="overall-note" style="border-color:#ff6b6b;color:#ff6b6b;">テンポ分析・評価・投稿文言の生成には失敗しましたが、編集タイムライン自体は生成できています: ${escapeHtml(metaErrorMsg)}</div>`;
+  }
+
+  if(result.tempo_analysis){
+    const phases = result.tempo_analysis.phases || [];
+    const slowPoints = result.tempo_analysis.slow_points || [];
+    if(phases.length){
+      html += '<div class="section-label">// Tempo Analysis</div>';
+      html += '<div class="tempo-bar">' + phases.map(p =>
+        `<div class="tempo-phase ${TEMPO_PHASE_CLASS[p.phase] || ''}" style="flex:1;" title="${escapeHtml(p.range||'')} ${escapeHtml(p.phase||'')}">${escapeHtml(p.phase||'')}</div>`
+      ).join('') + '</div>';
+      html += '<div class="tempo-phase-label">' + phases.map(p => escapeHtml(p.range||'')).join(' → ') + '</div>';
+      slowPoints.forEach(sp => {
+        html += `<div class="slow-point">
+          <span class="sp-range">${escapeHtml(sp.range||'')}</span>
+          <p class="sp-issue">${escapeHtml(sp.issue||'')}</p>
+          ${(sp.suggestions||[]).length ? `<p class="sp-suggestions">推奨: ${sp.suggestions.map(escapeHtml).join(' / ')}</p>` : ''}
+        </div>`;
+      });
+    }
+  }
+
+  if((result.editor_tips||[]).length){
+    html += '<div class="section-label">// Editor Tips</div>';
+    html += '<ul class="tips-list">' + result.editor_tips.map(t => `<li>${escapeHtml(t)}</li>`).join('') + '</ul>';
+  }
+
+  if(result.evaluation){
+    const ev = result.evaluation;
+    const labels = { hook: 'フック', tempo: 'テンポ', ending: 'オチ', reaction: 'リアクション', retention: '視聴維持率', title: 'タイトル', comment_guidance: 'コメント誘導', series: 'シリーズ性' };
+    const keys = Object.keys(labels).filter(k => ev[k] != null);
+    const total = keys.reduce((s,k) => s + (ev[k]||0), 0);
+    const totalOn100 = keys.length ? Math.round((total / (keys.length * 10)) * 100) : 0;
+    html += '<div class="section-label">// AI評価</div>';
+    html += `<div class="eval-total"><div class="e-total-num">${totalOn100}<span style="font-size:16px;">/100</span></div><div class="e-total-label">総合評価(各項目10点満点の合計を100点満点に換算)</div></div>`;
+    html += '<div class="eval-grid">' + keys.map(k =>
+      `<div class="eval-item"><div class="e-label">${escapeHtml(labels[k])}</div><div class="e-score">${escapeHtml(ev[k])}<span style="font-size:11px;color:var(--sub);">/10</span></div></div>`
+    ).join('') + '</div>';
+  }
+
+  if(result.post_assist){
+    const pa = result.post_assist;
+    html += '<div class="section-label">// 投稿支援</div>';
+    const postFields = [
+      { key: 'youtube_title', label: 'YouTube Shorts用タイトル' },
+      { key: 'tiktok_title', label: 'TikTok用タイトル' },
+      { key: 'description', label: '概要欄' },
+      { key: 'pinned_comment', label: 'コメント固定文案' },
+    ];
+    postFields.forEach(f => {
+      if(!pa[f.key]) return;
+      html += `<div class="post-card">
+        <div class="p-label">${escapeHtml(f.label)}</div>
+        <p class="p-value">${escapeHtml(pa[f.key])}</p>
+        <button type="button" class="p-copy" data-copy-field="${f.key}">コピー</button>
+      </div>`;
+    });
+    if((pa.hashtags||[]).length){
+      html += `<div class="post-card">
+        <div class="p-label">検索向けハッシュタグ</div>
+        <div class="post-hashtags" style="margin-bottom:8px;">${pa.hashtags.map(h => `<span>#${escapeHtml(h)}</span>`).join('')}</div>
+        <button type="button" class="p-copy" data-copy-field="hashtags">コピー</button>
+      </div>`;
+    }
+  }
+
+  if((result.time_saving_tips||[]).length){
+    html += '<div class="section-label">// 編集時間短縮ポイント</div>';
+    html += '<ul class="tips-list">' + result.time_saving_tips.map(t => `<li>${escapeHtml(t)}</li>`).join('') + '</ul>';
   }
 
   if(result.overall_note){
@@ -247,6 +699,39 @@ function renderResult(result){
 
   resultArea.innerHTML = html;
 }
+
+resultArea.addEventListener('click', (e) => {
+  const instBtn = e.target.closest('#toggleInstructionBtn');
+  if(instBtn){
+    const sheet = document.getElementById('instructionSheetArea');
+    const showing = sheet.style.display !== 'none';
+    sheet.style.display = showing ? 'none' : 'block';
+    instBtn.classList.toggle('active', !showing);
+    instBtn.textContent = showing ? '📋 編集指示書を表示' : '📋 編集指示書を隠す';
+    return;
+  }
+
+  const dvBtn = e.target.closest('.dv-trigger');
+  if(dvBtn && lastTimelineResult){
+    const target = parseInt(dvBtn.dataset.seconds, 10);
+    const { items, totalDur } = trimTimelineToDuration(lastTimelineResult.timeline || [], target);
+    renderDurationVariant(target, items, totalDur);
+    return;
+  }
+
+  if(e.target.classList.contains('p-copy')){
+    const field = e.target.dataset.copyField;
+    const pa = lastTimelineResult && lastTimelineResult.post_assist;
+    if(pa && field){
+      const value = field === 'hashtags' ? (pa.hashtags||[]).map(h => '#' + h).join(' ') : (pa[field] || '');
+      navigator.clipboard.writeText(String(value)).then(() => {
+        const orig = e.target.textContent;
+        e.target.textContent = 'コピーしました';
+        setTimeout(() => { e.target.textContent = orig; }, 1500);
+      }).catch(() => { e.target.textContent = 'コピーに失敗しました'; });
+    }
+  }
+});
 
 function escapeHtml(str){
   const div = document.createElement('div');
