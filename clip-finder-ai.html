@@ -232,7 +232,7 @@ transcribeBtn.addEventListener('click', async () => {
   transcribeBtn.disabled = true;
   genBtn.disabled = true;
   try{
-    const { lines, rawText, decodedSeconds } = await WhisperUtil.transcribeVideo(videoFile, {
+    const { lines, rawText, decodedSeconds, timestampsFailed } = await WhisperUtil.transcribeVideo(videoFile, {
       modelName,
       onStatus: (s) => { asrProgress.textContent = s; },
     });
@@ -242,7 +242,8 @@ transcribeBtn.addEventListener('click', async () => {
     } else {
       transcriptText.value = lines.map(l => `[${fmtTime(l.time)}] ${l.text}`).join('\n');
     }
-    asrProgress.textContent = `完了: ${lines.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください) 内容を確認・修正してから切り抜き提案を実行してください。`;
+    const tsNote = timestampsFailed ? '(タイムスタンプ付きでの文字起こしに失敗したため、区切り無しの1本のテキストとして取得しました。念のため内容をご確認ください) ' : '';
+    asrProgress.textContent = `完了: ${lines.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください) ${tsNote}内容を確認・修正してから切り抜き提案を実行してください。`;
   }catch(err){
     asrProgress.textContent = `文字起こしに失敗しました: ${err.message}`;
   }finally{

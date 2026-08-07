@@ -391,13 +391,14 @@ function createEntry(){
     transcribeBtnEl.disabled = true;
     researchBtn.disabled = true;
     try{
-      const { lines, rawText, decodedSeconds } = await WhisperUtil.transcribeVideo(videoFile, {
+      const { lines, rawText, decodedSeconds, timestampsFailed } = await WhisperUtil.transcribeVideo(videoFile, {
         modelName,
         onStatus: (s) => { asrProgressEl.textContent = s; },
       });
       const formatted = lines.map(l => `[${WhisperUtil.fmtTime(l.time)}] ${l.text}`);
       transcriptEl.value = formatted.length ? formatted.join('\n') : rawText;
-      asrProgressEl.textContent = `完了: ${formatted.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください)`;
+      const tsNote = timestampsFailed ? '(タイムスタンプ付きでの文字起こしに失敗したため、区切り無しの1本のテキストとして取得しました。念のため内容をご確認ください) ' : '';
+      asrProgressEl.textContent = `完了: ${formatted.length || 1}セグメントを生成しました。(認識した音声の長さ: 約${Math.round(decodedSeconds)}秒。動画の長さと大きく異なる場合はお知らせください) ${tsNote}`;
     }catch(err){
       asrProgressEl.textContent = `文字起こしに失敗しました: ${err.message}`;
     }finally{

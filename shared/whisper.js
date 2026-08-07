@@ -173,13 +173,34 @@
     // chunk_length_s must stay below 30: transformers.js has documented
     // timestamp-corruption bugs at exactly 30s that truncate/garble output
     // on longer audio (https://github.com/huggingface/transformers.js/issues/1358).
-    const output = await transcriber(audioData, {
-      language: 'japanese',
-      task: 'transcribe',
-      chunk_length_s: 29,
-      stride_length_s: 5,
-      return_timestamps: true,
-    });
+    let output;
+    let timestampsFailed = false;
+    try {
+      output = await transcriber(audioData, {
+        language: 'japanese',
+        task: 'transcribe',
+        chunk_length_s: 29,
+        stride_length_s: 5,
+        return_timestamps: true,
+      });
+    } catch (e) {
+      // "Decoding failed" and similar errors are a documented failure class
+      // tied specifically to Whisper's timestamp-token decoding path in this
+      // library, not to the audio input itself. Retry once without
+      // timestamps rather than failing outright -- a flat transcript with no
+      // per-segment timing is still far more useful than nothing.
+      timestampsFailed = true;
+      // eslint-disable-next-line no-console
+      console.warn('[WhisperUtil] timestamped transcription failed, retrying without timestamps:', e.message);
+      onStatus && onStatus('タイムスタンプ付き文字起こしに失敗したため、タイムスタンプ無しで再試行中...');
+      output = await transcriber(audioData, {
+        language: 'japanese',
+        task: 'transcribe',
+        chunk_length_s: 29,
+        stride_length_s: 5,
+        return_timestamps: false,
+      });
+    }
 
     const chunks = output.chunks || [];
     const lines = chunks
@@ -190,7 +211,7 @@
       })
       .filter(Boolean);
 
-    return { lines, rawText: (output.text || '').trim(), decodedSeconds };
+    return { lines, rawText: (output.text || '').trim(), decodedSeconds, timestampsFailed };
   }
 
   window.WhisperUtil = {
